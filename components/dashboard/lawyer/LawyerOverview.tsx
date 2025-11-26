@@ -259,6 +259,32 @@ export const LawyerOverview: React.FC = () => {
 
     return (
         <div className="space-y-8 animate-fade-in">
+            {/* Welcome Section */}
+            <div className="flex items-center justify-between mb-8 animate-fade-in-up pb-8 border-b border-cla-border dark:border-cla-border-dark">
+                {/* Left side text */}
+                <div>
+                    <h1 className="text-2xl font-semibold text-slate-800 dark:text-white">
+                        Welcome back, <span className="font-bold">{user.name}</span> 👋
+                    </h1>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Here’s what needs your attention today.
+                    </p>
+                </div>
+
+                {/* Right side profile block */}
+                <div className="flex items-center gap-3 pr-4">
+                    <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="h-14 w-14 rounded-full border border-slate-300 dark:border-slate-700 shadow-md object-cover"
+                    />
+                    <div className="flex flex-col leading-tight">
+                        <span className="font-medium text-slate-800 dark:text-white">{user.name}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 capitalize">{user.role}</span>
+                    </div>
+                </div>
+            </div>
+
             {/* Row 1: Metric Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>

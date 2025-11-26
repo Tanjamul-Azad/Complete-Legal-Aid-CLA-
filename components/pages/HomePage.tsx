@@ -7,10 +7,11 @@ import {
     UserGroupIcon, GavelIcon, ChatBubbleIcon,
     NewspaperIcon, LightBulbIcon, BookOpenIcon, ClockIcon, ChevronLeftIcon, ChevronRightIcon, ArrowLongRightIcon, MessageIcon, ChartBarIcon
 } from '../icons';
+import { Footer } from '../Footer';
 
 
 const ServiceCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-    <div className="cla-card card-gold-hover group p-8 h-full flex flex-col text-left hover:shadow-gold-soft-sm hover:-translate-y-1 bg-white dark:bg-[#111111] rounded-2xl border border-gray-100 dark:border-white/5">
+    <div className="cla-card card-gold-hover group p-8 h-full flex flex-col text-left shadow-sm hover:shadow-gold-soft-sm hover:-translate-y-1 bg-white dark:bg-[#111111] rounded-2xl border border-gray-200 dark:border-white/5">
         <div className="w-14 h-14 rounded-full bg-cla-gold/10 dark:bg-cla-gold/5 flex items-center justify-center mb-6 text-cla-gold group-hover:bg-cla-gold group-hover:text-white transition-colors duration-300">
             {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: "w-7 h-7" }) : icon}
         </div>
@@ -63,7 +64,7 @@ const InsightCard: React.FC<{
     icon: React.ElementType;
     image: string;
 }> = ({ category, title, description, date, readTime, icon: Icon, image }) => (
-    <div className="cla-card card-gold-hover group p-6 flex flex-col h-full relative overflow-hidden hover:shadow-gold-soft-sm hover:-translate-y-1 bg-white dark:bg-[#111111] rounded-2xl border border-gray-100 dark:border-white/5">
+    <div className="cla-card card-gold-hover group p-6 flex flex-col h-full relative overflow-hidden shadow-sm hover:shadow-gold-soft-sm hover:-translate-y-1 bg-white dark:bg-[#111111] rounded-2xl border border-gray-200 dark:border-white/5">
         <div className="absolute top-0 left-0 w-full h-1 bg-cla-gold transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
         <div className="flex items-center justify-between mb-4">
             <span className="px-3 py-1 rounded-full bg-gray-50 dark:bg-white/5 text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
@@ -197,7 +198,7 @@ export const HomePage: React.FC<{ setCurrentPage: (page: Page) => void; openEmer
             </div>
 
             {/* 2. Core Services */}
-            <div className="py-32 bg-cla-bg dark:bg-[#050505]">
+            <div className="py-32 bg-gray-50 dark:bg-[#050505]">
                 <div className="container mx-auto px-6 max-w-[1200px]">
                     <div className="text-left mb-16">
                         <h2 className="text-4xl md:text-5xl font-serif font-bold text-cla-text dark:text-white mb-6">Explore Our Core Services</h2>
@@ -220,7 +221,7 @@ export const HomePage: React.FC<{ setCurrentPage: (page: Page) => void; openEmer
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
                         <div className="hidden md:block absolute top-12 left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-transparent via-cla-gold/30 to-transparent -z-10"></div>
 
-                        <div className="step-shine cla-card bg-cla-bg dark:bg-[#111] p-8 rounded-3xl text-center border border-gray-100 dark:border-white/10 shadow-lg group">
+                        <div className="step-shine cla-card bg-white dark:bg-[#111] p-8 rounded-3xl text-center border border-gray-200 dark:border-white/10 shadow-xl group">
                             <div className="w-20 h-20 mx-auto bg-white dark:bg-black border border-cla-gold/20 rounded-full flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <MessageIcon className="w-8 h-8 text-cla-gold" />
                             </div>
@@ -229,7 +230,7 @@ export const HomePage: React.FC<{ setCurrentPage: (page: Page) => void; openEmer
                             <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">Describe your problem or ask our AI for instant preliminary guidance.</p>
                         </div>
 
-                        <div className="step-shine cla-card bg-cla-bg dark:bg-[#111] p-8 rounded-3xl text-center border border-gray-100 dark:border-white/10 shadow-lg group">
+                        <div className="step-shine cla-card bg-white dark:bg-[#111] p-8 rounded-3xl text-center border border-gray-200 dark:border-white/10 shadow-xl group">
                             <div className="w-20 h-20 mx-auto bg-white dark:bg-black border border-cla-gold/20 rounded-full flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <UserGroupIcon className="w-8 h-8 text-cla-gold" />
                             </div>
@@ -238,7 +239,7 @@ export const HomePage: React.FC<{ setCurrentPage: (page: Page) => void; openEmer
                             <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">We connect you with verified lawyers specialized in your specific case type.</p>
                         </div>
 
-                        <div className="step-shine cla-card bg-cla-bg dark:bg-[#111] p-8 rounded-3xl text-center border border-gray-100 dark:border-white/10 shadow-lg group">
+                        <div className="step-shine cla-card bg-white dark:bg-[#111] p-8 rounded-3xl text-center border border-gray-200 dark:border-white/10 shadow-xl group">
                             <div className="w-20 h-20 mx-auto bg-white dark:bg-black border border-cla-gold/20 rounded-full flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <ChartBarIcon className="w-8 h-8 text-cla-gold" />
                             </div>
@@ -251,7 +252,7 @@ export const HomePage: React.FC<{ setCurrentPage: (page: Page) => void; openEmer
             </div>
 
             {/* 4. Legal Insights */}
-            <div className="py-32 bg-cla-bg dark:bg-[#050505]">
+            <div className="py-32 bg-gray-50 dark:bg-[#050505]">
                 <div className="container mx-auto px-6 max-w-[1200px]">
                     <div className="flex justify-between items-end mb-16">
                         <div>
@@ -318,6 +319,9 @@ export const HomePage: React.FC<{ setCurrentPage: (page: Page) => void; openEmer
                     <TestimonialSlider />
                 </div>
             </div>
+
+            {/* Footer */}
+            {/* Footer removed to avoid duplication with App global footer */}
         </div>
     );
 };

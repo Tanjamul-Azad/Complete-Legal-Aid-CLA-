@@ -7,7 +7,17 @@ import { caseService } from '../services/caseService';
 import { termsContent } from '../legal/terms';
 import { privacyContent } from '../legal/privacy';
 
+// Navigation history entry type
+type NavigationHistoryEntry = {
+    page: Page;
+    subPage?: DashboardSubPage;
+    caseId?: string | null;
+};
+
 export const useAppLogic = () => {
+    // Navigation History Stack (for back button)
+    const [navigationHistory, setNavigationHistory] = useState<NavigationHistoryEntry[]>([]);
+
     // State definitions
     const [user, setUser] = useState<User | null>(null);
     const [users, setUsers] = useState<User[]>([]);
@@ -101,9 +111,56 @@ export const useAppLogic = () => {
     }, [dashboardSubPage, selectedCaseId, user]);
 
     // Navigation
+    const addToHistory = useCallback((entry: NavigationHistoryEntry) => {
+        setNavigationHistory(prev => {
+            const newHistory = [...prev, entry];
+            // Keep only last 10 entries
+            return newHistory.slice(-10);
+        });
+    }, []);
+
     const handleSetCurrentPage = (page: Page) => {
+        // Add current state to history before navigating
+        if (currentPage !== page) {
+            addToHistory({
+                page: currentPage,
+                subPage: currentPage === 'dashboard' ? dashboardSubPage : undefined,
+                caseId: currentPage === 'dashboard' ? selectedCaseId : undefined
+            });
+        }
         setCurrentPage(page);
         window.scrollTo(0, 0);
+    };
+
+    const handleSetDashboardSubPage = (subPage: DashboardSubPage, caseId?: string | null) => {
+        // Add current state to history before navigating
+        addToHistory({
+            page: 'dashboard',
+            subPage: dashboardSubPage,
+            caseId: selectedCaseId
+        });
+        setDashboardSubPage(subPage);
+        if (caseId !== undefined) {
+            setSelectedCaseId(caseId);
+        }
+    };
+
+    const handleGoBack = () => {
+        if (navigationHistory.length > 0) {
+            const previousEntry = navigationHistory[navigationHistory.length - 1];
+            // Remove it from history
+            setNavigationHistory(prev => prev.slice(0, -1));
+
+            // Restore the previous state WITHOUT adding to history
+            setCurrentPage(previousEntry.page);
+            if (previousEntry.subPage) {
+                setDashboardSubPage(previousEntry.subPage);
+            }
+            if (previousEntry.caseId !== undefined) {
+                setSelectedCaseId(previousEntry.caseId);
+            }
+            window.scrollTo(0, 0);
+        }
     };
 
     const goToAuth = (mode: 'login' | 'signup' | 'admin-login', options?: { signupRole?: UserRole }) => {
@@ -468,6 +525,7 @@ export const useAppLogic = () => {
         user, users, currentPage, authPageMode, initialSignupRole, userToReset, legalPageContent, emailVerificationPageStatus,
         isEmergencyHelpOpen, isEmergencyReportOpen, complaintModalTarget, isChatOpen, toast, simulatedEmails, isGmailInboxOpen, isGoogleAuthOpen, reviewTarget,
         dashboardSubPage, cases, appointments, messages, evidenceDocuments, notifications, activityLogs, selectedCaseId, typingLawyers, isInboxOpen, isNotificationsOpen, isDarkMode,
+        navigationHistory, handleGoBack, handleSetDashboardSubPage,
         handleSetCurrentPage, handleLogin, handleSignup, onSimulateGoogleLogin, handleEmailVerification, clearSession, handleLogout, goToAuth,
         handleForgotPasswordRequest, handlePasswordReset, showLegalPage, setGoogleAuthOpen, handleReadEmail, handleHireLawyerClick,
         handleFindLawyerFromEmergency, handleLiveChatFromEmergency, handleMakeComplaint, setEmergencyHelpOpen, setEmergencyReportOpen,

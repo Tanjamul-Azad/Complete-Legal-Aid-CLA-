@@ -1,17 +1,18 @@
 
 import React, { useState, useContext } from 'react';
 import { ScaleIcon, MailIcon, CloseIcon, UserCircleIcon, SettingsIcon, LogoutIcon, DashboardIcon } from './icons';
+import { Logo } from './Logo';
 import { AppContext } from '../context/AppContext';
 import { ThemeToggle } from './ThemeToggle';
 import { ProfileDropdown } from './ProfileDropdown';
 
 const NavItem: React.FC<{ page: 'home' | 'about' | 'contact'; children: React.ReactNode; mobile?: boolean; closeMenu?: () => void }> = ({ page, children, mobile = false, closeMenu }) => {
     const context = useContext(AppContext);
-    
+
     if (!context) return null;
 
     const { handleSetCurrentPage, currentPage } = context;
-    
+
     const handleClick = () => {
         handleSetCurrentPage(page);
         if (closeMenu) closeMenu();
@@ -35,7 +36,7 @@ const NavItem: React.FC<{ page: 'home' | 'about' | 'contact'; children: React.Re
 
 export const Header: React.FC = () => {
     const context = useContext(AppContext);
-    
+
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     if (!context) return null;
@@ -56,7 +57,7 @@ export const Header: React.FC = () => {
             setDashboardSubPage('settings');
         } else if (target === 'help') {
             // Map help to overview or a specific help page if available
-            setDashboardSubPage('overview'); 
+            setDashboardSubPage('overview');
         }
         closeMobileMenu();
     };
@@ -67,11 +68,12 @@ export const Header: React.FC = () => {
                 <div className="flex items-center justify-between h-16 md:h-[72px]">
                     {/* Left: Logo & Dashboard Shortcut */}
                     <div className="flex items-center gap-4">
-                        <button onClick={() => handleSetCurrentPage('home')} className="flex-shrink-0 flex items-center gap-3 group">
-                           <div className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-cla-gold flex items-center justify-center text-white shadow-lg shadow-cla-gold/20 transition-transform group-hover:scale-105">
-                               <ScaleIcon className="h-5 w-5" />
-                           </div>
-                           <span className="text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-tight font-serif">Complete Legal Aid</span>
+                        <button
+                            onClick={() => handleSetCurrentPage('home')}
+                            className="flex-shrink-0 group focus:outline-none hover:opacity-80 transition-opacity"
+                            aria-label="Go to Homepage"
+                        >
+                            <Logo className="w-auto h-11" />
                         </button>
 
                         {/* Back to Dashboard Button (Visible only when logged in and NOT on dashboard) */}
@@ -92,11 +94,11 @@ export const Header: React.FC = () => {
                         <NavItem page="about">About</NavItem>
                         <NavItem page="contact">Contact</NavItem>
                     </nav>
-                    
+
                     {/* Right: Actions */}
                     <div className="flex items-center space-x-2 md:space-x-3">
-                       <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-                        
+                        <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+
                         {user ? (
                             <div className="hidden md:flex items-center space-x-3 ml-2 pl-3 border-l border-gray-200 dark:border-gray-800">
                                 <button onClick={() => setGmailInboxOpen(true)} className="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors" aria-label="Open inbox">
@@ -105,9 +107,9 @@ export const Header: React.FC = () => {
                                         <span className="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-black" />
                                     )}
                                 </button>
-                                
+
                                 {/* Profile Dropdown */}
-                                <ProfileDropdown 
+                                <ProfileDropdown
                                     name={user.name}
                                     email={user.email}
                                     role={user.role}
@@ -126,7 +128,7 @@ export const Header: React.FC = () => {
                                 </button>
                             </div>
                         )}
-                         
+
                         {/* Mobile menu button */}
                         <div className="md:hidden ml-2">
                             <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)} className="p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10" aria-controls="mobile-menu" aria-expanded={isMobileMenuOpen}>
@@ -137,7 +139,7 @@ export const Header: React.FC = () => {
                                     </svg>
                                 )}
                             </button>
-                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -150,7 +152,7 @@ export const Header: React.FC = () => {
                         <NavItem page="about" mobile closeMenu={closeMobileMenu}>About</NavItem>
                         <NavItem page="contact" mobile closeMenu={closeMobileMenu}>Contact</NavItem>
                         {user && currentPage !== 'dashboard' && (
-                             <button onClick={() => handleProfileNavigation('dashboard')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-cla-gold hover:bg-cla-gold/10 transition-colors">
+                            <button onClick={() => handleProfileNavigation('dashboard')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-cla-gold hover:bg-cla-gold/10 transition-colors">
                                 Back to Dashboard
                             </button>
                         )}

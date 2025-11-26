@@ -91,7 +91,7 @@ const SimulatedGmailInbox: React.FC<{
             <div className="bg-cla-bg dark:bg-cla-surface-dark rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
                 <header className="p-4 border-b border-cla-border dark:border-cla-border-dark flex justify-between items-center">
                     <h2 className="text-xl font-bold text-cla-text dark:text-cla-text-dark">Simulated Inbox</h2>
-                     <button onClick={onClose} className="text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-cla-text-dark">
+                    <button onClick={onClose} className="text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-cla-text-dark">
                         <CloseIcon />
                     </button>
                 </header>
@@ -106,9 +106,9 @@ const SimulatedGmailInbox: React.FC<{
                                     <p className="font-medium text-cla-text dark:text-cla-text-dark">{email.subject}</p>
                                     <div className="mt-2 text-sm text-cla-text-muted dark:text-cla-text-muted-dark" dangerouslySetInnerHTML={{ __html: email.body }} />
                                     {email.action && (
-                                         <button onClick={() => handleActionClick(email)} className="mt-2 text-sm text-blue-500 hover:underline">
-                                             {email.action.buttonText}
-                                         </button>
+                                        <button onClick={() => handleActionClick(email)} className="mt-2 text-sm text-blue-500 hover:underline">
+                                            {email.action.buttonText}
+                                        </button>
                                     )}
                                 </li>
                             ))}
@@ -121,71 +121,13 @@ const SimulatedGmailInbox: React.FC<{
 };
 
 
-const Footer: React.FC = () => {
-    const context = useContext(AppContext);
-    if (!context) return null;
-    const { handleSetCurrentPage, showLegalPage } = context;
-    
-    const handleLinkClick = (e: React.MouseEvent, page: Page) => {
-        e.preventDefault();
-        handleSetCurrentPage(page);
-    };
-
-    return (
-        // Dark footer for professional anchor look in both themes
-        <footer className="bg-[#020617] text-slate-300 border-t border-slate-800">
-            <div className="container mx-auto px-6 max-w-[1200px] py-16">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-                    {/* CLA Info */}
-                    <div className="md:col-span-2 pr-8">
-                        <div className="flex items-center gap-2 mb-6">
-                            <div className="h-8 w-8 rounded-md bg-cla-gold flex items-center justify-center text-white font-bold">CLA</div>
-                            <span className="text-2xl font-bold text-white tracking-tight font-serif">Complete Legal Aid</span>
-                        </div>
-                        <p className="text-sm leading-relaxed text-slate-400 max-w-md">
-                            Complete Legal Aid (CLA) is a pioneering platform bridging the gap between citizens and justice. We combine expert legal representation with cutting-edge AI technology.
-                        </p>
-                    </div>
-
-                    {/* Information */}
-                    <div>
-                        <h3 className="text-white font-bold mb-6 tracking-wide uppercase text-xs">Information</h3>
-                        <ul className="space-y-3 text-sm text-slate-400">
-                            <li>House #123, Road #5, Block #C</li>
-                            <li>Dhaka, Bangladesh</li>
-                            <li><a href="mailto:connect@cla-bangladesh.com" className="hover:text-white transition-colors">connect@cla-bangladesh.com</a></li>
-                            <li>+880 1712 345678</li>
-                        </ul>
-                    </div>
-
-                    {/* Useful Links */}
-                    <div>
-                        <h3 className="text-white font-bold mb-6 tracking-wide uppercase text-xs">Useful Links</h3>
-                        <ul className="space-y-3 text-sm text-slate-400">
-                            <li><button onClick={(e) => handleLinkClick(e, 'contact')} className="hover:text-cla-gold transition-colors">Contact Us</button></li>
-                            <li><button onClick={(e) => handleLinkClick(e, 'about')} className="hover:text-cla-gold transition-colors">FAQ</button></li>
-                            <li><button onClick={(e) => handleLinkClick(e, 'about')} className="hover:text-cla-gold transition-colors">Help</button></li>
-                            <li><button onClick={(e) => handleLinkClick(e, 'insights')} className="hover:text-cla-gold transition-colors">Legal Insights</button></li>
-                        </ul>
-                    </div>
-                </div>
-                 <div className="mt-16 border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
-                    <p>&copy; {new Date().getFullYear()} COMPLETE LEGAL AID. All Rights Reserved.</p>
-                    <div className="flex space-x-6 mt-4 md:mt-0">
-                        <button onClick={() => showLegalPage('Terms & Conditions', 'terms')} className="hover:text-cla-gold transition-colors">Terms & Conditions</button>
-                        <button onClick={() => showLegalPage('Privacy Policy', 'privacy')} className="hover:text-cla-gold transition-colors">Privacy Policy</button>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    );
-};
+import { Footer } from './components/Footer';
 
 
 const PageRenderer: React.FC = () => {
     const context = useContext(AppContext);
     if (!context) return null;
-    
+
     const {
         currentPage, user, authPageMode, initialSignupRole, userToReset, legalPageContent, emailVerificationPageStatus,
         handleSetCurrentPage, handleLogin, handleSignup, onSimulateGoogleLogin, handleEmailVerification, clearSession, handleLogout, goToAuth, handleForgotPasswordRequest, handlePasswordReset, showLegalPage, setGoogleAuthOpen
@@ -228,7 +170,7 @@ const PageRenderer: React.FC = () => {
 const AppContent: React.FC = () => {
     const context = useContext(AppContext);
     if (!context) return null;
-    
+
     const {
         currentPage, isEmergencyHelpOpen, isEmergencyReportOpen, complaintModalTarget, isChatOpen, toast, simulatedEmails, isGmailInboxOpen, isGoogleAuthOpen, users, reviewTarget,
         onSimulateGoogleLogin, handleEmailVerification, handleReadEmail, handleHireLawyerClick, handleFindLawyerFromEmergency, handleLiveChatFromEmergency, handleMakeComplaint, setEmergencyHelpOpen, setEmergencyReportOpen, setComplaintModalTarget, setChatOpen, setGoogleAuthOpen, setGmailInboxOpen, setToast, handleSetCurrentPage, setReviewTarget, handleReviewSubmit
@@ -240,7 +182,7 @@ const AppContent: React.FC = () => {
     return (
         <div className={`bg-cla-bg dark:bg-cla-bg-dark text-cla-text dark:text-cla-text-dark font-sans ${isDashboard ? 'h-screen overflow-hidden' : 'flex flex-col min-h-screen'}`}>
             {isDashboard ? null : <Header />}
-            
+
             <main className={isDashboard ? 'h-full' : 'flex-1 flex flex-col'}>
                 <PageRenderer />
             </main>
@@ -248,10 +190,10 @@ const AppContent: React.FC = () => {
             {isDashboard ? null : <Footer />}
 
             {/* Floating Buttons & Modals that can appear on any page */}
-            {!isDashboard && <EmergencyButton onClick={() => setEmergencyHelpOpen(true)} /> }
-            
+            {!isDashboard && <EmergencyButton onClick={() => setEmergencyHelpOpen(true)} />}
+
             {!isDashboard && !isChatOpen && (
-                 <button
+                <button
                     onClick={() => setChatOpen(true)}
                     className="ai-assistant-btn glow"
                 >
@@ -275,7 +217,7 @@ const AppContent: React.FC = () => {
                 isOpen={isEmergencyReportOpen}
                 onClose={() => setEmergencyReportOpen(false)}
             />
-             {complaintModalTarget && (
+            {complaintModalTarget && (
                 <ComplaintModal
                     isOpen={!!complaintModalTarget}
                     onClose={() => setComplaintModalTarget(null)}
@@ -285,7 +227,7 @@ const AppContent: React.FC = () => {
             )}
 
             <AiChatbot isOpen={isChatOpen} setIsOpen={setChatOpen} onHireLawyerClick={handleHireLawyerClick} />
-            
+
             <Toast show={!!toast} message={toast?.message || ''} type={toast?.type} onDismiss={() => setToast(null)} />
 
             <SimulatedGoogleAuthModal
@@ -294,7 +236,7 @@ const AppContent: React.FC = () => {
                 onLogin={onSimulateGoogleLogin}
                 users={users}
             />
-             <SimulatedGmailInbox
+            <SimulatedGmailInbox
                 isOpen={isGmailInboxOpen}
                 onClose={() => setGmailInboxOpen(false)}
                 emails={simulatedEmails}
@@ -302,7 +244,7 @@ const AppContent: React.FC = () => {
                 setCurrentPage={handleSetCurrentPage}
                 onVerifyClick={handleEmailVerification}
             />
-            <ReviewModal 
+            <ReviewModal
                 isOpen={!!reviewTarget}
                 onClose={() => setReviewTarget(null)}
                 onSubmit={handleReviewSubmit}

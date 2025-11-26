@@ -7,13 +7,13 @@ import {
     LockClosedIcon, StarIcon, MessageIcon, ClockIcon, DocumentCloudIcon, ScaleIcon, BuildingOfficeIcon
 } from '../../icons';
 
-// --- Helper Components (Defined outside to prevent re-renders) ---
+// --- Helper Components ---
 
 const SectionHeader: React.FC<{ icon: React.ReactNode, title: string, className?: string, count?: number }> = ({ icon, title, className = '', count }) => (
     <div className={`flex items-center gap-3 mb-4 ${className}`}>
         <div className="p-2 bg-cla-surface dark:bg-cla-bg-dark rounded-lg">{icon}</div>
         <div className="flex items-center gap-2">
-            <h3 className="text-xl font-semibold text-cla-text dark:text-cla-text-dark">{title}</h3>
+            <h3 className="text-lg font-bold text-cla-text dark:text-cla-text-dark">{title}</h3>
             {typeof count !== 'undefined' && <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-cla-gold/20 text-cla-gold-darker dark:text-cla-gold">{count} items</span>}
         </div>
     </div>
@@ -86,7 +86,6 @@ export const CitizenOverview: React.FC = () => {
     const context = useContext(AppContext);
     const [animateProgress, setAnimateProgress] = useState(false);
 
-    // All hooks must be called at the top level, before any conditional returns.
     const user = context?.user;
     const activityLogs = context?.activityLogs;
 
@@ -124,10 +123,7 @@ export const CitizenOverview: React.FC = () => {
         return () => clearInterval(intervalId);
     }, [user]);
 
-    // This conditional return must come AFTER all hooks have been called.
-    if (!context || !user) {
-        return null;
-    }
+    if (!context || !user) return null;
 
     const {
         users: allUsers, appointments, cases, messages, evidenceDocuments, notifications,
@@ -137,6 +133,8 @@ export const CitizenOverview: React.FC = () => {
 
     const documentCount = evidenceDocuments.filter(doc => cases.some(c => c.id === doc.caseId && c.clientId === user.id)).length;
     const activeCases = cases.filter(c => c.clientId === user.id && c.status !== 'Resolved');
+    // FIXED: Actual filtering for upcoming appointments
+    const upcomingAppointments = appointments.filter(a => a.clientId === user.id && new Date(a.date) >= new Date()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const attentionItems = useMemo(() => {
         const items: any[] = [];
@@ -179,21 +177,44 @@ export const CitizenOverview: React.FC = () => {
 
     return (
         <div className="space-y-8">
-            <div className="animate-fade-in-up pb-8 border-b border-cla-border dark:border-cla-border-dark">
-                <h1 className="text-3xl font-semibold text-cla-text dark:text-cla-text-dark">Welcome back, {user.name} 👋</h1>
-                <p className="text-md text-cla-text-muted dark:text-cla-text-muted-dark mt-1">{attentionItems.length > 0 ? `Here’s what needs your attention today.` : "You're all caught up. Here's a summary of your activities."}</p>
+            {/* OPTION A: Inline Profile Placement */}
+            <div className="flex items-center justify-between mb-8 animate-fade-in-up pb-8 border-b border-cla-border dark:border-cla-border-dark">
+                <div className="flex items-center gap-6">
+                    {/* Profile Picture - Inline and balanced */}
+                    <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="h-16 w-16 rounded-full border-2 border-white dark:border-slate-700 shadow-sm object-cover"
+                    />
+
+                    {/* Welcome Text - Stronger hierarchy */}
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+                            Welcome back, {user.name} 👋
+                        </h1>
+                        <div className="flex items-center gap-3 mt-1.5">
+                            <span className="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-cla-gold/10 text-cla-gold-darker dark:text-cla-gold">
+                                {user.role}
+                            </span>
+                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                                {attentionItems.length > 0 ? "You have new updates." : "You're all caught up."}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                {/* Main Column (Left) */}
                 <div className="xl:col-span-2 space-y-8">
                     {attentionItems.length > 0 && (
-                        <section className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                        <section className="animate-fade-in-up mt-8" style={{ animationDelay: '100ms' }}>
                             <SectionHeader icon={<WarningIcon className="w-6 h-6 text-yellow-500" />} title="Needs Your Attention" count={attentionItems.length} />
-                            <div className="space-y-3">{attentionItems.map(item => <AttentionItem key={item.id} {...item} />)}</div>
+                            <div className="space-y-4">{attentionItems.map(item => <AttentionItem key={item.id} {...item} />)}</div>
                         </section>
                     )}
 
-                    <section className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                    <section className="animate-fade-in-up mt-8" style={{ animationDelay: '200ms' }}>
                         <SectionHeader icon={<BriefcaseIcon className="w-6 h-6 text-cla-gold" />} title="Active Cases" />
                         <ClickableWidget onClick={() => setDashboardSubPage('cases')} className="p-6">
                             <div className="flex justify-between items-center mb-4">
@@ -207,29 +228,29 @@ export const CitizenOverview: React.FC = () => {
                                         const currentStep = steps.indexOf(c.status);
                                         const progress = currentStep >= 0 ? ((currentStep + 1) / (steps.length) * 100) : 0;
                                         return (
-                                            <div key={c.id} onClick={(e) => { e.stopPropagation(); setSelectedCaseId(c.id); setDashboardSubPage('cases'); }} className="hover:bg-cla-surface dark:hover:bg-cla-bg-dark -m-2 p-2 rounded-md cursor-pointer">
+                                            <div key={c.id} onClick={(e) => { e.stopPropagation(); setSelectedCaseId(c.id); setDashboardSubPage('cases'); }} className="hover:bg-cla-surface dark:hover:bg-cla-bg-dark -m-2 p-3 rounded-lg cursor-pointer transition-colors">
                                                 <div className="flex justify-between items-center mb-2">
                                                     <p className="font-semibold text-cla-text dark:text-cla-text-dark flex items-center gap-2">{getCaseIcon(c.title)} {c.title}</p>
-                                                    <p className="text-sm font-medium text-cla-text-muted dark:text-cla-text-muted-dark">{c.status}</p>
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${c.status === 'Resolved' ? 'bg-green-100 text-green-800' : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>{c.status}</span>
                                                 </div>
-                                                <div className="w-full bg-cla-border dark:bg-cla-border-dark rounded-full h-2">
-                                                    <div className="bg-cla-gold h-2 rounded-full transition-all duration-1000 ease-out" style={{ width: animateProgress ? `${progress}%` : '0%' }}></div>
+                                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-3">
+                                                    <div className="bg-cla-gold h-1.5 rounded-full transition-all duration-1000 ease-out" style={{ width: animateProgress ? `${progress}%` : '0%' }}></div>
                                                 </div>
-                                                <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark mt-2">Next action: Lawyer Review</p>
+                                                <p className="text-[10px] text-cla-text-muted dark:text-cla-text-muted-dark mt-2 uppercase tracking-wide font-semibold">Next: Lawyer Review</p>
                                             </div>
                                         )
                                     })}
                                 </div>
                             ) : (
-                                <div className="text-center py-8">
-                                    <DocumentTextIcon className="w-12 h-12 text-cla-text-muted dark:text-cla-text-muted-dark mx-auto" />
-                                    <p className="mt-2 text-cla-text-muted dark:text-cla-text-muted-dark font-medium">You have no active cases.</p>
+                                <div className="text-center py-12">
+                                    <DocumentTextIcon className="w-12 h-12 text-cla-text-muted dark:text-cla-text-muted-dark mx-auto opacity-50" />
+                                    <p className="mt-3 text-cla-text-muted dark:text-cla-text-muted-dark font-medium">You have no active cases.</p>
                                 </div>
                             )}
                         </ClickableWidget>
                     </section>
 
-                    <section className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                    <section className="animate-fade-in-up mt-8" style={{ animationDelay: '300ms' }}>
                         <SectionHeader icon={<ClockIcon className="w-6 h-6 text-cla-gold" />} title="Recent Activity" />
                         <div className="bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark p-6 rounded-xl">
                             <div className="space-y-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
@@ -256,61 +277,76 @@ export const CitizenOverview: React.FC = () => {
                     </section>
                 </div>
 
-                <div className="space-y-6">
-                    <section className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                {/* Sidebar Column (Right) */}
+                <div className="space-y-8">
+                    <section className="animate-fade-in-up mt-8" style={{ animationDelay: '400ms' }}>
                         <SectionHeader icon={<CalendarIcon className="w-6 h-6 text-cla-gold" />} title="My Schedule" />
-                        <ClickableWidget onClick={() => setDashboardSubPage('appointments')} className="p-6">
-                            {appointments.filter(a => new Date(a.date) >= new Date()).length > 0 ? <div>...</div> : (
-                                <div className="text-center">
-                                    <p className="font-medium text-cla-text-muted dark:text-cla-text-muted-dark">No upcoming appointments.</p>
-                                    <button onClick={(e) => { e.stopPropagation(); setDashboardSubPage('find-lawyers'); }} className="mt-3 px-4 py-2 text-sm font-semibold bg-cla-gold text-cla-text rounded-lg hover:bg-cla-gold-darker transition-colors">Book a Consultation</button>
+                        <ClickableWidget onClick={() => setDashboardSubPage('appointments')} className="p-5">
+                            {upcomingAppointments.length > 0 ? (
+                                <div className="space-y-4">
+                                    {upcomingAppointments.slice(0, 2).map(appt => (
+                                        <div key={appt.id} className="flex items-center gap-3 pb-3 border-b border-cla-border dark:border-white/5 last:border-0 last:pb-0">
+                                            {/* Reduced date badge size by ~15% */}
+                                            <div className="flex flex-col items-center justify-center w-10 h-10 bg-gray-100 dark:bg-white/10 rounded-lg text-cla-text dark:text-white">
+                                                <span className="text-[10px] font-bold uppercase">{new Date(appt.date).toLocaleString('default', { month: 'short' })}</span>
+                                                <span className="text-base font-bold leading-none">{new Date(appt.date).getDate()}</span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-cla-text dark:text-white truncate">{appt.title || appt.type}</p>
+                                                <p className="text-xs text-cla-text-muted dark:text-gray-400">{appt.time} • {appt.mode}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {upcomingAppointments.length > 2 && (
+                                        <p className="text-xs text-center text-cla-text-muted dark:text-gray-500">+{upcomingAppointments.length - 2} more events</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="text-center py-4">
+                                    <p className="font-medium text-sm text-cla-text-muted dark:text-cla-text-muted-dark mb-3">No upcoming appointments.</p>
+                                    <button onClick={(e) => { e.stopPropagation(); setDashboardSubPage('find-lawyers'); }} className="w-full px-4 py-2 text-xs font-bold uppercase tracking-wide bg-cla-gold/10 text-cla-gold-darker dark:text-cla-gold rounded-lg hover:bg-cla-gold/20 transition-colors">Book Consultation</button>
                                 </div>
                             )}
                         </ClickableWidget>
                     </section>
 
-                    <section className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                    <section className="animate-fade-in-up mt-8" style={{ animationDelay: '500ms' }}>
                         <SectionHeader icon={<VaultIcon className="w-6 h-6 text-cla-gold" />} title="Evidence Vault" />
-                        <ClickableWidget onClick={() => setDashboardSubPage('vault')} className="p-6 text-center">
-                            <p className="text-6xl font-bold text-cla-gold">{documentCount}</p>
-                            <p className="text-cla-text-muted dark:text-cla-text-muted-dark mt-1 text-sm font-semibold uppercase tracking-wider">Documents Secured</p>
-                            <div className="flex items-center justify-center gap-2 mt-4 text-xs text-green-600 dark:text-green-400">
-                                <LockClosedIcon className="w-4 h-4" />
-                                <span>Vault is end-to-end encrypted</span>
+                        <ClickableWidget onClick={() => setDashboardSubPage('vault')} className="p-6 text-center bg-gradient-to-b from-white to-gray-50 dark:from-[#1E1E1E] dark:to-[#151515]">
+                            <p className="text-5xl font-bold text-cla-text dark:text-white">{documentCount}</p>
+                            <p className="text-cla-text-muted dark:text-gray-400 mt-1 text-xs font-bold uppercase tracking-wider">Documents Secured</p>
+                            <div className="flex items-center justify-center gap-1.5 mt-4 text-[10px] font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20 py-1 px-2 rounded-full inline-flex">
+                                <LockClosedIcon className="w-3 h-3" />
+                                <span className="tracking-tight">AES-256 Encrypted</span>
                             </div>
                         </ClickableWidget>
                     </section>
 
-                    <section className="animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-                        <div className="bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark p-6 rounded-xl">
+                    <section className="animate-fade-in-up mt-8" style={{ animationDelay: '600ms' }}>
+                        <div className="bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark p-5 rounded-xl">
                             <SectionHeader icon={<RobotIcon className="w-6 h-6 text-cla-gold" />} title="Quick AI Help" className="mb-2" />
-                            <p className="text-sm text-cla-text-muted dark:text-cla-text-muted-dark mb-4">Ask our AI assistant for preliminary legal information.</p>
-                            <div className="space-y-2 text-sm">
-                                <button onClick={() => setChatOpen(true)} className="block w-full text-left p-2 rounded-md hover:bg-cla-surface-dark/50 dark:hover:bg-cla-bg-dark text-blue-500 dark:text-blue-400">How to file a GD?</button>
-                                <button onClick={() => setChatOpen(true)} className="block w-full text-left p-2 rounded-md hover:bg-cla-surface-dark/50 dark:hover:bg-cla-bg-dark text-blue-500 dark:text-blue-400">What are my rights in a labor dispute?</button>
+                            <div className="space-y-2 text-sm mt-3">
+                                <button onClick={() => setChatOpen(true)} className="w-full text-left p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium">
+                                    "How to file a GD?"
+                                </button>
+                                <button onClick={() => setChatOpen(true)} className="w-full text-left p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium">
+                                    "Labor dispute rights?"
+                                </button>
                             </div>
                         </div>
                     </section>
 
-                    <section className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
-                        <SectionHeader icon={<BookOpenIcon className="w-6 h-6 text-cla-gold" />} title="Legal Resources" />
-                        <div className="space-y-3">
-                            <ClickableWidget onClick={() => { }} className="p-4">
-                                <h4 className="font-semibold text-cla-text dark:text-cla-text-dark">Bangladesh Legal Aid Act, 2000</h4>
-                                <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark mt-1">Understand your rights to government-funded legal aid.</p>
-                            </ClickableWidget>
-                            <ClickableWidget onClick={() => { }} className="p-4">
-                                <h4 className="font-semibold text-cla-text dark:text-cla-text-dark">The Code of Civil Procedure, 1908</h4>
-                                <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark mt-1">Rules governing civil lawsuits in Bangladesh.</p>
-                            </ClickableWidget>
-                        </div>
-                    </section>
-
-                    <section className="animate-fade-in-up" style={{ animationDelay: '800ms' }}>
+                    <section className="animate-fade-in-up mt-8" style={{ animationDelay: '800ms' }}>
                         <SectionHeader icon={<PlusCircleIcon className="w-6 h-6 text-cla-gold" />} title="Quick Actions" />
-                        <div className="flex flex-col gap-3">
-                            <button onClick={() => setDashboardSubPage('cases')} className="w-full text-center px-4 py-3 bg-cla-gold/10 text-cla-gold font-bold rounded-lg hover:bg-cla-gold/20 transition-colors">Submit a New Case</button>
-                            <button onClick={() => setDashboardSubPage('find-lawyers')} className="w-full text-center px-4 py-3 bg-cla-surface dark:bg-cla-surface-dark text-cla-text dark:text-cla-text-dark font-bold rounded-lg border border-cla-border dark:border-cla-border-dark hover:bg-cla-bg dark:hover:bg-cla-bg-dark transition-colors">Find a Lawyer</button>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => setDashboardSubPage('cases')} className="flex flex-col items-center justify-center p-4 bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark rounded-xl hover:border-cla-gold dark:hover:border-cla-gold hover:shadow-md transition-all group">
+                                <DocumentTextIcon className="w-6 h-6 text-gray-400 group-hover:text-cla-gold mb-2" />
+                                <span className="text-xs font-bold text-cla-text dark:text-white">New Case</span>
+                            </button>
+                            <button onClick={() => setDashboardSubPage('find-lawyers')} className="flex flex-col items-center justify-center p-4 bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark rounded-xl hover:border-cla-gold dark:hover:border-cla-gold hover:shadow-md transition-all group">
+                                <SearchIcon className="w-6 h-6 text-gray-400 group-hover:text-cla-gold mb-2" />
+                                <span className="text-xs font-bold text-cla-text dark:text-white">Find Lawyer</span>
+                            </button>
                         </div>
                     </section>
                 </div>

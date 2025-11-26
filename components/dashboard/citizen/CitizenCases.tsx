@@ -1,8 +1,7 @@
-
-import React, { useState, useMemo, useContext, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useContext, useEffect } from 'react';
 import type { User, Case } from '../../../types';
 import { AppContext } from '../../../context/AppContext';
-import { BriefcaseIcon, ChevronRightIcon, PlusCircleIcon, DocumentTextIcon, SearchIcon, ScaleIcon, BuildingOfficeIcon } from '../../icons';
+import { BriefcaseIcon, DocumentTextIcon, SearchIcon, ScaleIcon, BuildingOfficeIcon } from '../../icons';
 
 const getCaseIcon = (title: string) => {
     const lowerTitle = title.toLowerCase();
@@ -38,11 +37,11 @@ const useDebounce = (value: string, delay: number) => {
 
 export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }> = ({ onSelectCase }) => {
     const context = useContext(AppContext);
-    
+
     const [filter, setFilter] = useState<'all' | 'active' | 'resolved'>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
-    
+
     const user = context?.user;
     const cases = context?.cases || [];
     const allUsers = context?.users || [];
@@ -51,9 +50,9 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
 
     const filteredAndSortedCases = useMemo(() => {
         let processedCases = [...userCases];
-        
+
         if (debouncedSearchTerm.trim() !== '') {
-            processedCases = processedCases.filter(c => 
+            processedCases = processedCases.filter(c =>
                 c.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
             );
         }
@@ -72,12 +71,13 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
     if (!context || !user) return null;
 
     const caseStatusSteps: Case['status'][] = ['Submitted', 'In Review', 'Scheduled', 'Resolved'];
-    
+
     const PremiumProgressStepper: React.FC<{ status: Case['status'] }> = ({ status }) => {
         const currentStepIndex = caseStatusSteps.indexOf(status);
+
         return (
-            <div className="w-full pt-4">
-                <div className="flex items-center">
+            <div className="w-full pt-4 pb-6 px-1"> {/* Added padding bottom for labels */}
+                <div className="flex items-center relative">
                     {caseStatusSteps.map((step, index) => {
                         const isCompleted = index < currentStepIndex;
                         const isActive = index === currentStepIndex;
@@ -85,17 +85,29 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
 
                         return (
                             <React.Fragment key={step}>
-                                <div className="flex flex-col items-center">
-                                    <div className={`w-3 h-3 rounded-full border-2 transition-all duration-300
-                                        ${isActive ? 'bg-cla-gold border-cla-gold' : ''}
-                                        ${isCompleted ? 'bg-gray-400 border-gray-400' : ''}
-                                        ${isUpcoming ? 'bg-transparent border-gray-400' : ''}
+                                {/* Dot and Label Container */}
+                                <div className="relative flex flex-col items-center z-10">
+                                    <div className={`w-3 h-3 rounded-full border-2 transition-all duration-300 box-content
+                                        ${isActive ? 'bg-cla-gold border-cla-gold scale-125' : ''}
+                                        ${isCompleted ? 'bg-cla-gold border-cla-gold' : ''}
+                                        ${isUpcoming ? 'bg-white dark:bg-[#111] border-gray-300 dark:border-gray-600' : ''}
                                     `}></div>
+
+                                    {/* Step Label - Absolutely positioned to avoid breaking flex layout */}
+                                    <span className={`absolute top-6 text-[10px] font-semibold whitespace-nowrap transition-colors duration-300
+                                        ${isActive ? 'text-cla-gold' : ''}
+                                        ${isCompleted ? 'text-gray-600 dark:text-gray-300' : ''}
+                                        ${isUpcoming ? 'text-gray-400 dark:text-gray-600' : ''}
+                                    `}>
+                                        {step}
+                                    </span>
                                 </div>
+
+                                {/* Connecting Line */}
                                 {index < caseStatusSteps.length - 1 && (
-                                    <div className="flex-1 h-0.5 mx-1 bg-gradient-to-r from-gray-400 to-gray-300 dark:from-gray-500 dark:to-gray-700 relative">
-                                        <div className={`absolute top-0 left-0 h-full bg-gradient-to-r from-cla-gold to-gray-400 dark:to-gray-500 transition-all duration-500 ease-out`}
-                                            style={{ width: `${ index < currentStepIndex ? '100%' : '0%' }` }}
+                                    <div className="flex-1 h-0.5 mx-1 bg-gray-200 dark:bg-gray-700 relative">
+                                        <div className={`absolute top-0 left-0 h-full bg-cla-gold transition-all duration-500 ease-out`}
+                                            style={{ width: `${index < currentStepIndex ? '100%' : '0%'}` }}
                                         />
                                     </div>
                                 )}
@@ -103,9 +115,6 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
                         );
                     })}
                 </div>
-                <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark/70 mt-3">
-                    Next action: Lawyer Review
-                </p>
             </div>
         );
     };
@@ -115,8 +124,8 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
         <button
             onClick={() => onClick(value)}
             className={`group relative px-4 py-2 text-sm rounded-full transition-colors duration-300
-                ${current === value 
-                    ? 'font-semibold text-cla-text dark:text-white bg-cla-gold/10 dark:bg-cla-gold/15' 
+                ${current === value
+                    ? 'font-semibold text-cla-text dark:text-white bg-cla-gold/10 dark:bg-cla-gold/15'
                     : 'text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-white'
                 }`}
         >
@@ -139,37 +148,39 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
 
         const ripple = button.getElementsByClassName("ripple")[0];
         if (ripple) ripple.remove();
-        
+
         button.appendChild(circle);
     };
 
     const CaseCard: React.FC<{ caseData: Case; lawyer: User | undefined, animationDelay: string }> = ({ caseData, lawyer, animationDelay }) => (
-        <div 
+        <div
             className="group bg-white dark:bg-[#111111] rounded-2xl shadow-lg shadow-gray-500/5 dark:shadow-black/20 border border-cla-border dark:border-white/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-cla-gold/50 dark:hover:border-cla-gold/30 active:scale-[0.98] animate-fade-in-up"
             style={{ animationDelay }}
         >
             <div className="p-6 h-full flex flex-col justify-between">
                 <div>
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start mb-4">
                         <div className="flex items-start gap-4">
-                            <div className="w-11 h-11 flex-shrink-0 bg-gray-100 dark:bg-white/5 rounded-lg flex items-center justify-center">
+                            <div className="w-11 h-11 flex-shrink-0 bg-gray-100 dark:bg-white/5 rounded-lg flex items-center justify-center text-cla-text dark:text-white">
                                 {getCaseIcon(caseData.title)}
                             </div>
                             <div>
-                                <h3 className="text-lg font-semibold text-[#444] dark:text-gray-200 pr-4">{caseData.title}</h3>
-                                 <p className="text-sm text-cla-text-muted dark:text-[#CFCFCF] mt-1">
-                                    {lawyer ? `with ${lawyer.name}` : 'Awaiting lawyer assignment'}
+                                <h3 className="text-lg font-semibold text-[#444] dark:text-gray-200 pr-4 line-clamp-1">{caseData.title}</h3>
+                                <p className="text-sm text-cla-text-muted dark:text-[#CFCFCF] mt-1">
+                                    {lawyer ? `Managed by ${lawyer.name}` : 'Pending assignment'}
                                 </p>
                             </div>
                         </div>
-                        {lawyer && <img src={lawyer.avatar} alt={lawyer.name} className="w-12 h-12 rounded-full ring-2 ring-cla-border dark:ring-white/10 flex-shrink-0" />}
+                        {lawyer && <img src={lawyer.avatar} alt={lawyer.name} className="w-10 h-10 rounded-full ring-2 ring-cla-border dark:ring-white/10 flex-shrink-0 object-cover" />}
                     </div>
+
                     <PremiumProgressStepper status={caseData.status} />
                 </div>
-                <div className="flex justify-between items-center mt-4 pt-4 border-t border-cla-border dark:border-white/5">
-                     <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark">Submitted: {new Date(caseData.submittedDate).toLocaleDateString()}</p>
-                    <button 
-                        onClick={(e) => { createRipple(e); setTimeout(() => onSelectCase(caseData.id), 200); }} 
+
+                <div className="flex justify-between items-center mt-2 pt-4 border-t border-cla-border dark:border-white/5">
+                    <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark">ID: {caseData.id.toUpperCase()}</p>
+                    <button
+                        onClick={(e) => { createRipple(e); setTimeout(() => onSelectCase(caseData.id), 200); }}
                         className="ripple-container px-4 py-2 bg-cla-gold text-cla-text font-semibold rounded-lg hover:bg-cla-gold-darker transition-all text-sm transform hover:shadow-lg hover:shadow-cla-gold/20 dark:bg-gradient-to-br dark:from-cla-gold dark:to-cla-gold-darker dark:hover:shadow-cla-gold/30 dark:hover:brightness-110"
                     >
                         View Details
@@ -178,21 +189,18 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
             </div>
         </div>
     );
-    
+
     return (
         <div className="animate-fade-in">
-             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4 animate-fade-in-up">
-                 <div>
+            {/* Header Section - Removed Submit Button */}
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4 animate-fade-in-up">
+                <div>
                     <h1 className="text-3xl font-semibold text-cla-text dark:text-cla-text-dark">My Cases</h1>
-                    <p className="text-md text-cla-text-muted dark:text-cla-text-muted-dark mt-1">View and manage all your ongoing and past legal cases.</p>
-                 </div>
-                 <button onClick={() => alert('Submit New Case form would open here.')} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-cla-gold text-cla-text font-bold rounded-lg hover:bg-cla-gold-darker transition-colors whitespace-nowrap">
-                    <PlusCircleIcon className="w-5 h-5" />
-                     Submit New Case
-                 </button>
-             </div>
-             
-             {userCases.length > 0 ? (
+                    <p className="text-md text-cla-text-muted dark:text-cla-text-muted-dark mt-1">Track the live status of your legal proceedings.</p>
+                </div>
+            </div>
+
+            {userCases.length > 0 ? (
                 <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                         <div className="p-1 bg-gray-100 dark:bg-cla-surface-dark rounded-full flex items-center gap-2 flex-wrap">
@@ -200,7 +208,7 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
                             <FilterButton value="active" current={filter} onClick={setFilter}>Active</FilterButton>
                             <FilterButton value="resolved" current={filter} onClick={setFilter}>Resolved</FilterButton>
                         </div>
-                        
+
                         <div className="relative w-full sm:max-w-xs">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <SearchIcon className="h-5 w-5 text-gray-400" />
@@ -216,29 +224,25 @@ export const CitizenCases: React.FC<{ onSelectCase: (caseId: string) => void; }>
                     </div>
 
                     <div key={filter} className="grid md:grid-cols-2 gap-6">
-                       {filteredAndSortedCases.length > 0 ? (
-                           filteredAndSortedCases.map((c, index) => {
+                        {filteredAndSortedCases.length > 0 ? (
+                            filteredAndSortedCases.map((c, index) => {
                                 const lawyer = allUsers.find(u => u.id === c.lawyerId);
                                 return <CaseCard key={c.id} caseData={c} lawyer={lawyer} animationDelay={`${150 + index * 80}ms`} />;
                             })
                         ) : (
                             <div className="text-center py-16 bg-cla-surface dark:bg-cla-surface-dark rounded-lg col-span-2">
-                                 <p className="text-cla-text-muted dark:text-cla-text-muted-dark">No cases found matching your search criteria.</p>
+                                <p className="text-cla-text-muted dark:text-cla-text-muted-dark">No cases found matching your search criteria.</p>
                             </div>
                         )}
                     </div>
                 </div>
-             ) : (
+            ) : (
                 <div className="text-center py-20 bg-cla-surface dark:bg-cla-surface-dark rounded-lg border-2 border-dashed border-cla-border dark:border-cla-border-dark animate-fade-in-up">
-                    <DocumentTextIcon className="w-16 h-16 mx-auto text-cla-text-muted dark:text-cla-text-muted-dark" />
+                    <DocumentTextIcon className="w-16 h-16 mx-auto text-cla-text-muted dark:text-cla-text-muted-dark opacity-50" />
                     <h3 className="mt-4 text-xl font-semibold text-cla-text dark:text-cla-text-dark">No Cases Found</h3>
-                    <p className="mt-1 text-cla-text-muted dark:text-cla-text-muted-dark">You haven't submitted any legal cases yet. <br /> Get started by submitting your first case.</p>
-                     <button onClick={() => alert('Submit New Case form would open here.')} className="mt-6 flex items-center justify-center gap-2 mx-auto px-5 py-2.5 bg-cla-gold text-cla-text font-bold rounded-lg hover:bg-cla-gold-darker transition-colors">
-                        <PlusCircleIcon className="w-5 h-5" />
-                        Submit a Case
-                    </button>
+                    <p className="mt-1 text-cla-text-muted dark:text-cla-text-muted-dark">You don't have any active cases being managed by a lawyer yet.</p>
                 </div>
-             )}
+            )}
         </div>
     );
 };

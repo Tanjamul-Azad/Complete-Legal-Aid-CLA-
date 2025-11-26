@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
-import type { Page, User, Case, DashboardSubPage, EvidenceDocument, VerificationStatus, UserRole, SimulatedEmail, Appointment, ActivityLog, Notification, Message } from '../../types';
+import type { UserRole, DashboardSubPage } from '../../types';
 import { AppContext } from '../../context/AppContext';
 import {
     DashboardIcon, VaultIcon, SettingsIcon, VerificationIcon, SearchIcon,
-    BellIcon, RobotIcon, CalendarIcon, LogoutIcon, BriefcaseIcon, MessageIcon, UserGroupIcon, BanknotesIcon
+    BellIcon, RobotIcon, CalendarIcon, LogoutIcon, BriefcaseIcon, MessageIcon, UserGroupIcon, BanknotesIcon, WarningIcon
 } from '../icons';
 import { Breadcrumb, BreadcrumbItem } from '../ui/Breadcrumb';
 import { DashboardHeader } from './DashboardHeader';
-import { InboxPanel } from './InboxPanel';
+import { Logo } from '../Logo';
+import { SecureChatWidget } from './SecureChatWidget';
 import { NotificationsPanel } from './NotificationsPanel';
 
 // Shared Pages
@@ -44,7 +45,6 @@ interface NavItem {
     action?: () => void;
 }
 
-
 export const DashboardPage: React.FC = () => {
     const context = useContext(AppContext);
 
@@ -55,7 +55,7 @@ export const DashboardPage: React.FC = () => {
         goToAuth, handleLogout, cases, selectedCaseId, setSelectedCaseId, handleNotificationNavigation,
         isInboxOpen, setInboxOpen, isNotificationsOpen, setNotificationsOpen, openInbox, openNotifications,
         markAllNotificationsAsRead, markMessagesAsRead, markConversationAsRead, setChatOpen,
-        handleSetCurrentPage
+        handleSetCurrentPage, handleSendMessage
     } = context;
 
     const unreadMessagesCount = useMemo(() => {
@@ -77,7 +77,7 @@ export const DashboardPage: React.FC = () => {
     }, [user, goToAuth]);
 
     if (!user) {
-        return null; // Or a loading spinner, while redirecting
+        return null;
     }
 
     const getNavItems = (role: UserRole): NavItem[] => {
@@ -173,32 +173,38 @@ export const DashboardPage: React.FC = () => {
                 switch (subPage) {
                     case 'overview': return <AdminOverview />;
                     case 'verification': return <AdminVerification />;
-                    case 'settings': return <CitizenSettings />; // Admins can use citizen settings for now
+                    case 'settings': return <CitizenSettings />;
                     default: return <AdminOverview />;
                 }
         }
-        return null; // Fallback
+        return null;
     };
 
 
     return (
         <div className="flex h-full bg-cla-bg dark:bg-cla-bg-dark text-cla-text dark:text-cla-text-dark overflow-hidden">
-            {/* Sidebar with distinct background color - Responsive: hidden on mobile, flex on md+ */}
+            {/* Sidebar */}
             <aside className="w-64 flex-shrink-0 bg-cla-sidebar-bg dark:bg-cla-sidebar-bg hidden md:flex flex-col border-r border-cla-border dark:border-cla-border-dark transition-all duration-300">
-                <button
-                    onClick={() => handleSetCurrentPage('home')}
-                    className="p-4 border-b border-cla-border dark:border-cla-border-dark flex items-center gap-3 w-full text-left hover:bg-white/50 dark:hover:bg-white/5 transition-colors group"
-                    title="Go to Homepage"
-                >
-                    <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0 group-hover:ring-2 group-hover:ring-cla-gold/50 transition-all" />
-                    <div className="overflow-hidden">
-                        <h2 className="font-bold text-sm text-cla-text dark:text-cla-text-dark truncate group-hover:text-cla-gold transition-colors">{user.name}</h2>
-                        <p className="text-xs capitalize text-cla-text-muted dark:text-cla-text-muted-dark truncate flex items-center gap-1">
-                            {user.role}
-                            <span className="hidden group-hover:inline-block px-1.5 py-0.5 rounded bg-cla-gold/10 text-cla-gold text-[9px] font-bold uppercase ml-1">Home</span>
-                        </p>
-                    </div>
-                </button>
+                <div className="flex items-center justify-center py-6 border-b border-cla-border dark:border-cla-border-dark">
+                    <button
+                        onClick={() => handleSetCurrentPage('home')}
+                        className="flex items-center gap-2 group focus:outline-none"
+                    >
+                        {/* Using the Logo component but sizing it to match the requested h-9 */}
+                        <div className="h-9 w-auto transition group-hover:opacity-80 text-cla-gold">
+                            {/* We can use the Logo component here. The Logo component has its own text "CLA". 
+                                The user requested: Logo Image + "CLA" text. 
+                                My Logo component ALREADY has "CLA" text inside the SVG. 
+                                So I should just use the Logo component and maybe hide the extra text if I can, 
+                                OR just use the Logo component as is if it looks good.
+                                The user's HTML shows: <img src="/assets/logo/cla-logo.svg" class="h-9 w-auto" /> <span class="text-xl...">CLA</span>
+                                My Logo component is the full logo. 
+                                Let's use the Logo component and adjust sizing. 
+                             */}
+                            <Logo className="h-9 w-auto" />
+                        </div>
+                    </button>
+                </div>
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
                     {navItems.map(item => (
                         <button
@@ -232,24 +238,30 @@ export const DashboardPage: React.FC = () => {
                     </button>
                 </div>
             </aside>
-            <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col overflow-hidden min-w-0 bg-[#FAFAFA] dark:bg-cla-bg-dark">
                 <DashboardHeader
                     unreadMessagesCount={unreadMessagesCount}
                     unreadNotificationsCount={unreadNotificationsCount}
                     openInbox={openInbox}
                     openNotifications={openNotifications}
                 />
-                <main className="flex-1 p-6 lg:p-8 overflow-y-auto custom-scrollbar">
-                    <Breadcrumb items={breadcrumbItems} />
-                    {renderSubPage()}
+                <main className="flex-1 overflow-y-auto custom-scrollbar">
+                    {/* FIXED: This container limits width to prevent 'scattered' look on big screens */}
+                    <div className="max-w-[1400px] mx-auto p-4 lg:p-6">
+                        <Breadcrumb items={breadcrumbItems} />
+                        {renderSubPage()}
+                    </div>
                 </main>
             </div>
-            <InboxPanel
+            <SecureChatWidget
                 isOpen={isInboxOpen}
                 onClose={() => setInboxOpen(false)}
+                currentUser={user}
                 messages={messages}
                 allUsers={users}
-                markAllAsRead={markMessagesAsRead}
+                onSendMessage={handleSendMessage}
                 markConversationAsRead={markConversationAsRead}
             />
             <NotificationsPanel
@@ -260,6 +272,25 @@ export const DashboardPage: React.FC = () => {
                 markAllAsRead={markAllNotificationsAsRead}
                 setDashboardSubPage={setDashboardSubPage}
             />
+
+            {/* Floating Emergency Help Button */}
+            {/* Floating Emergency Help Button (Bottom-Left) */}
+            <button
+                onClick={() => context.setEmergencyHelpOpen(true)}
+                className="fixed bottom-6 left-6 z-50 flex items-center justify-center w-14 h-14 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                title="Emergency Help"
+            >
+                <WarningIcon className="w-8 h-8" />
+            </button>
+
+            {/* Floating AI Assistant Button (Bottom-Right) */}
+            <button
+                onClick={() => context.setChatOpen(true)}
+                className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-cla-gold text-cla-text-darker rounded-full shadow-lg hover:bg-yellow-500 hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-cla-gold/30 animate-bounce-subtle"
+                title="AI Legal Assistant"
+            >
+                <RobotIcon className="w-8 h-8" />
+            </button>
         </div>
     );
 };

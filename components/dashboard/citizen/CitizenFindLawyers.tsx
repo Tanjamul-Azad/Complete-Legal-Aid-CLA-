@@ -53,11 +53,10 @@ export const CitizenFindLawyers: React.FC = () => {
             return nameMatch && specMatch && locMatch;
         });
     }, [debouncedSearchTerm, specializationFilter, locationFilter, verifiedLawyers]);
-    
-    // Trigger animations on filter change
+
     useEffect(() => {
         setIsFiltering(true);
-        const timer = setTimeout(() => setIsFiltering(false), 150); // duration of fade-out
+        const timer = setTimeout(() => setIsFiltering(false), 150);
         return () => clearTimeout(timer);
     }, [debouncedSearchTerm, specializationFilter, locationFilter]);
 
@@ -69,16 +68,17 @@ export const CitizenFindLawyers: React.FC = () => {
     };
 
     return (
-        <div className="animate-fade-in bg-cla-bg dark:bg-[#0E0E0E] min-h-full -m-8 p-8">
+        <div className="animate-fade-in space-y-8">
             <div className="animate-fade-in-up">
                 <h1 className="text-3xl font-bold text-cla-text dark:text-white mb-2">Find Your Legal Expert</h1>
-                <p className="text-md text-cla-text-muted dark:text-[#CFCFCF] mb-8">Search our network of verified lawyers in Bangladesh.</p>
+                <p className="text-md text-cla-text-muted dark:text-[#CFCFCF]">Search our network of verified lawyers in Bangladesh.</p>
             </div>
 
-            <div className="bg-cla-surface dark:bg-[#111111] p-4 rounded-lg shadow-sm dark:border border-white/5 mb-8 sticky top-[88px] z-20 animate-fade-in-up" style={{animationDelay: '100ms'}}>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="bg-cla-surface dark:bg-[#111111] p-5 rounded-xl shadow-sm dark:border border-white/5 sticky top-[72px] z-20 animate-fade-in-up transition-all duration-300" style={{ animationDelay: '100ms' }}>
+                {/* Responsive Grid for Filters */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <div className="md:col-span-2">
-                         <label htmlFor="search" className="flex items-center gap-2 text-sm font-medium text-cla-text dark:text-white mb-1">
+                        <label htmlFor="search" className="flex items-center gap-2 text-sm font-medium text-cla-text dark:text-white mb-1.5">
                             <SearchIcon className="h-[18px] w-[18px] text-cla-gold" />
                             Search by name
                         </label>
@@ -87,39 +87,39 @@ export const CitizenFindLawyers: React.FC = () => {
                             id="search"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            className="block w-full p-2.5 border rounded-xl bg-[#F7F7F7] dark:bg-white/5 border-[#E5E5E5] dark:border-white/10 text-cla-text dark:text-white placeholder:text-[#A0A0A0] dark:placeholder:text-white/40 focus:ring-cla-gold focus:border-cla-gold transition-all"
+                            className="block w-full p-2.5 border rounded-xl bg-[#F7F7F7] dark:bg-white/5 border-[#E5E5E5] dark:border-white/10 text-cla-text dark:text-white placeholder:text-[#A0A0A0] dark:placeholder:text-white/40 focus:ring-2 focus:ring-cla-gold focus:border-transparent transition-all"
                             placeholder="e.g., Anisul Huq"
                         />
                     </div>
-                     <div>
-                        <label htmlFor="specialization" className="flex items-center gap-2 text-sm font-medium text-cla-text dark:text-white mb-1">
+                    <div>
+                        <label htmlFor="specialization" className="flex items-center gap-2 text-sm font-medium text-cla-text dark:text-white mb-1.5">
                             <BriefcaseIcon className="h-5 w-5 text-cla-gold" />
                             Specialization
                         </label>
-                        <select id="specialization" value={specializationFilter} onChange={e => setSpecializationFilter(e.target.value)} className="block w-full p-2.5 border rounded-xl bg-white dark:bg-[#111111] border-[#E5E5E5] dark:border-white/10 text-cla-text dark:text-white focus:ring-cla-gold focus:border-cla-gold transition-all appearance-none bg-no-repeat bg-right pr-8" style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23F59E0B' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.7rem center'}}>
+                        <select id="specialization" value={specializationFilter} onChange={e => setSpecializationFilter(e.target.value)} className="block w-full p-2.5 border rounded-xl bg-white dark:bg-[#111111] border-[#E5E5E5] dark:border-white/10 text-cla-text dark:text-white focus:ring-2 focus:ring-cla-gold focus:border-transparent transition-all appearance-none bg-no-repeat bg-right pr-8" style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23F59E0B' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.7rem center' }}>
                             <option value="">All Specializations</option>
                             {allSpecializations.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                     </div>
-                     <div>
-                        <label htmlFor="location" className="flex items-center gap-2 text-sm font-medium text-cla-text dark:text-white mb-1">
+                    <div>
+                        <label htmlFor="location" className="flex items-center gap-2 text-sm font-medium text-cla-text dark:text-white mb-1.5">
                             <MapPinIcon className="h-5 w-5 text-cla-gold" />
                             Location
                         </label>
-                        <select id="location" value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className="block w-full p-2.5 border rounded-xl bg-white dark:bg-[#111111] border-[#E5E5E5] dark:border-white/10 text-cla-text dark:text-white focus:ring-cla-gold focus:border-cla-gold transition-all appearance-none bg-no-repeat bg-right pr-8" style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23F59E0B' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.7rem center'}}>
+                        <select id="location" value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className="block w-full p-2.5 border rounded-xl bg-white dark:bg-[#111111] border-[#E5E5E5] dark:border-white/10 text-cla-text dark:text-white focus:ring-2 focus:ring-cla-gold focus:border-transparent transition-all appearance-none bg-no-repeat bg-right pr-8" style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23F59E0B' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.7rem center' }}>
                             <option value="">All Locations</option>
                             {allLocations.map(l => <option key={l} value={l}>{l}</option>)}
                         </select>
                     </div>
                 </div>
             </div>
-            
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {!isFiltering && (filteredLawyers.length > 0 ? (
-                    filteredLawyers.map((lawyer, index) => 
-                        <LawyerProfileCard 
-                            key={lawyer.id} 
-                            user={lawyer} 
+                    filteredLawyers.map((lawyer, index) =>
+                        <LawyerProfileCard
+                            key={lawyer.id}
+                            user={lawyer}
                             onSelect={() => setSelectedLawyer(lawyer)}
                             animationDelay={`${100 + index * 60}ms`}
                         />

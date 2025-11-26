@@ -10,15 +10,17 @@ interface ProfileDropdownProps {
     avatar: string;
     onLogout: () => void;
     onNavigate: (page: 'settings' | 'profile' | 'help' | 'dashboard') => void;
+    minimal?: boolean;
 }
 
-export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ 
-    name, 
-    email, 
-    role, 
-    avatar, 
-    onLogout, 
-    onNavigate 
+export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+    name,
+    email,
+    role,
+    avatar,
+    onLogout,
+    onNavigate,
+    minimal = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -48,38 +50,43 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     }, [isOpen]);
 
     const roleLabel = role === 'citizen' ? 'Citizen' : role === 'lawyer' ? 'Legal Professional' : 'Administrator';
-    const roleBadgeColor = role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 
-                           role === 'lawyer' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 
-                           'bg-cla-gold/10 text-cla-gold-darker dark:text-cla-gold';
+    const roleBadgeColor = role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+        role === 'lawyer' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+            'bg-cla-gold/10 text-cla-gold-darker dark:text-cla-gold';
 
     return (
         <div className="relative" ref={dropdownRef}>
             {/* Trigger */}
-            <button 
+            <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all focus:outline-none group"
+                className={`flex items-center gap-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all focus:outline-none group ${minimal ? 'p-1' : 'pl-1 pr-2 py-1'}`}
                 aria-haspopup="true"
                 aria-expanded={isOpen}
+                aria-label="User menu"
             >
-                <img 
-                    className="h-9 w-9 rounded-full object-cover ring-2 ring-cla-gold/20 group-hover:ring-cla-gold/50 transition-all" 
-                    src={avatar} 
-                    alt={name} 
+                <img
+                    className="h-9 w-9 rounded-full object-cover ring-2 ring-cla-gold/20 group-hover:ring-cla-gold/50 transition-all"
+                    src={avatar}
+                    alt={name}
                 />
-                <div className="hidden sm:flex flex-col items-start text-left">
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 leading-tight max-w-[100px] truncate">
-                        {name}
-                    </span>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight capitalize">
-                        {role}
-                    </span>
-                </div>
-                <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                {!minimal && (
+                    <>
+                        <div className="hidden sm:flex flex-col items-start text-left">
+                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 leading-tight max-w-[100px] truncate">
+                                {name}
+                            </span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight capitalize">
+                                {role}
+                            </span>
+                        </div>
+                        <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                    </>
+                )}
             </button>
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div 
+                <div
                     className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#050816] rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 z-50 origin-top-right animate-scale-in overflow-hidden"
                     role="menu"
                 >
@@ -95,7 +102,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                     {/* Menu Items */}
                     <div className="p-2 space-y-0.5">
                         {/* Dashboard Link (Useful on public pages) */}
-                        <button 
+                        <button
                             onClick={() => { onNavigate('dashboard'); setIsOpen(false); }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors group"
                             role="menuitem"
@@ -104,7 +111,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                             Dashboard
                         </button>
 
-                        <button 
+                        <button
                             onClick={() => { onNavigate('profile'); setIsOpen(false); }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors group"
                             role="menuitem"
@@ -112,8 +119,8 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                             <UserCircleIcon className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-cla-gold transition-colors" />
                             My Profile
                         </button>
-                        
-                        <button 
+
+                        <button
                             onClick={() => { onNavigate('settings'); setIsOpen(false); }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors group"
                             role="menuitem"
@@ -121,8 +128,8 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                             <SettingsIcon className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-cla-gold transition-colors" />
                             Account Settings
                         </button>
-                        
-                        <button 
+
+                        <button
                             onClick={() => { onNavigate('help'); setIsOpen(false); }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors group"
                             role="menuitem"
@@ -134,7 +141,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
                     {/* Footer Section */}
                     <div className="border-t border-gray-100 dark:border-white/5 p-2">
-                        <button 
+                        <button
                             onClick={() => { onLogout(); setIsOpen(false); }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors font-medium"
                             role="menuitem"
