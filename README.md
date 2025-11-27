@@ -114,87 +114,81 @@ complete-legal-aid/
 └── README.md
 
 ```
-🤖 AI Legal Assistant
+## 🤖 AI Legal Assistant
 
-Helps citizens understand the law in simple Bangla:
+Helps citizens understand the law in **simple Bangla**:
 
-Labor law (termination, workplace rights)
+- Labor law (termination, workplace rights)
+- Cyber law (DSA issues, privacy violations)
+- Family law (divorce, maintenance, custody)
+- Criminal & civil basics
 
-Cyber law (DSA issues, privacy violations)
+**Supports:**
 
-Family law (divorce, maintenance, custody)
+✔️ Q/A  
+✔️ Document summary  
+✔️ Risk analysis  
+✔️ Next-steps guidance  
+✔️ Lawyer recommendation  
 
-Criminal & civil basics
+---
 
-Supports:
+## 🔐 Secure Evidence Vault
 
-✔️ Q/A
-✔️ Document summary
-✔️ Risk analysis
-✔️ Next-steps guidance
-✔️ Lawyer recommendation
+- End-to-end encrypted uploads  
+- Virus scan + MIME validation  
+- Time-limited secure share links  
+- Access only after lawyer approval  
+- Audit log for every file action  
 
-🔐 Secure Evidence Vault
+**Supported file types:**  
+`PDF, DOCX, JPG, PNG, MP3`
 
-End-to-end encrypted uploads
+---
 
-Virus scan + MIME validation
+## 📅 Consultation Booking Flow
 
-Time-limited secure share links
+1. User selects a lawyer  
+2. System displays **live availability**  
+3. User books a slot → Lawyer receives request  
+4. Lawyer accepts/declines  
+5. System sends notifications  
+6. Meeting summary is stored with the case  
 
-Access only after lawyer approval
+---
 
-Audit log for every file action
+## 📡 Emergency Legal Helpline
 
-File types: PDF, DOCX, JPG, PNG, MP3
+- Anonymous reporting  
+- Fast evidence upload  
+- Auto-routing to NGOs / support teams  
+- Priority alert to verified responders  
 
-📅 Consultation Booking Flow
+---
 
-User selects a lawyer
+## 🛣️ Roadmap
 
-System displays live availability
+- [ ] Payment gateway (Bkash, Nagad, Cards)  
+- [ ] Lawyer income analytics  
+- [ ] Full chat with voice notes  
+- [ ] Mobile App (React Native)  
+- [ ] Court integration (future)  
+- [ ] Advanced AI for contracts & forms  
 
-User books slot → Lawyer receives request
+---
 
-Lawyer accepts/declines
+## ▶️ Getting Started (Local Development)
 
-System sends notifications
+### **1️⃣ Clone Repo**
 
-Meeting summary stored with case
-
-📡 Emergency Legal Helpline
-
-Anonymous reporting
-
-Fast evidence upload
-
-Auto-routing to NGOs / support teams
-
-Priority alert to verified responders
-
-🛣️ Roadmap
-
- Payment gateway (Bkash, Nagad, Cards)
-
- Lawyer income analytics
-
- Full chat with voice notes
-
- Mobile App (React Native)
-
- Court integration (future)
-
- Advanced AI for contracts & forms
-
-▶️ Getting Started (Local Development)
-1️⃣ Clone Repo
+```bash
 git clone https://github.com/Tanjamul-Azad/Complete-Legal-Aid.git
 cd Complete-Legal-Aid
 
-2️⃣ Install Dependencies
 npm install
+# or
+yarn install
 
-3️⃣ Run Project
 npm run dev
 
 Visit:
