@@ -124,6 +124,8 @@ const SimulatedGmailInbox: React.FC<{
 import { Footer } from './components/Footer';
 
 
+import { CareersPage } from './components/pages/CareersPage';
+
 const PageRenderer: React.FC = () => {
     const context = useContext(AppContext);
     if (!context) return null;
@@ -150,6 +152,8 @@ const PageRenderer: React.FC = () => {
             return <AboutPage setCurrentPage={handleSetCurrentPage} />;
         case 'contact':
             return <ContactPage setCurrentPage={handleSetCurrentPage} />;
+        case 'careers':
+            return <CareersPage setCurrentPage={handleSetCurrentPage} />;
         case 'login':
             return <AuthPage onLogin={handleLogin} onSignup={handleSignup} onSimulateGoogleLogin={onSimulateGoogleLogin} openGoogleAuth={() => setGoogleAuthOpen(true)} defaultMode={authPageMode} initialSignupRole={initialSignupRole} onForgotPassword={handleForgotPasswordRequest} setCurrentPage={handleSetCurrentPage} showLegalPage={showLegalPage} onLogout={clearSession} />;
         case 'reset-password':

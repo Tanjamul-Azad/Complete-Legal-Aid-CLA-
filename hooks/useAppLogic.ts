@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import type { User, UserRole, Page, DashboardSubPage, SimulatedEmail, Notification, Case, Appointment, ActivityLog, Message, EvidenceDocument, Review, VerificationStatus, AppTheme } from '../types';
+import type { User, UserRole, Page, DashboardSubPage, SimulatedEmail, Notification, Case, Appointment, ActivityLog, Message, EvidenceDocument, Review, VerificationStatus, AppTheme, SiteContent, SupportMessage } from '../types';
 import { ALL_USERS, CASES, EVIDENCE_DOCUMENTS, NOTIFICATIONS, APPOINTMENTS, ACTIVITY_LOGS, MESSAGES } from '../constants';
 import { authService } from '../services/authService';
 import { caseService } from '../services/caseService';
@@ -64,6 +64,55 @@ export const useAppLogic = () => {
     const [notifications, setNotifications] = useState<Notification[]>(NOTIFICATIONS);
     const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(ACTIVITY_LOGS);
     const [typingLawyers, setTypingLawyers] = useState<Record<string, boolean>>({});
+    const [chatTargetUserId, setChatTargetUserId] = useState<string | null>(null);
+    const [supportMessages, setSupportMessages] = useState<SupportMessage[]>(() => {
+        const stored = localStorage.getItem('cla-support-messages');
+        return stored ? JSON.parse(stored) : [];
+    });
+
+    const addSupportMessage = (msg: Omit<SupportMessage, 'id' | 'timestamp' | 'status'>) => {
+        const newMsg: SupportMessage = {
+            ...msg,
+            id: Date.now().toString(),
+            timestamp: Date.now(),
+            status: 'New'
+        };
+        setSupportMessages(prev => {
+            const updated = [newMsg, ...prev];
+            localStorage.setItem('cla-support-messages', JSON.stringify(updated));
+            return updated;
+        });
+    };
+
+
+    // Site Content State
+    const [siteContent, setSiteContent] = useState<SiteContent>(() => {
+        const stored = localStorage.getItem('cla-site-content');
+        if (stored) return JSON.parse(stored);
+        return {
+            about: {
+                mission: 'To empower every citizen with the legal resources and support they need to navigate the complexities of the judicial system with confidence and ease.',
+                vision: 'To create a digitally-integrated legal ecosystem in Bangladesh where finding legal help is as simple, transparent, and reliable as any modern digital service.',
+                values: 'Integrity, Accessibility, and Innovation. We believe in a justice system that is fair, open, and accessible to everyone, regardless of their background or financial status.'
+            },
+            contact: {
+                email: 'support@cla-bangladesh.com',
+                phone: '+880 1234 567 890',
+                address: '123 Justice Avenue, Dhaka, Bangladesh'
+            },
+            privacy: privacyContent,
+            terms: termsContent
+        };
+    });
+
+    const updateSiteContent = (newContent: Partial<SiteContent>) => {
+        setSiteContent(prev => {
+            const updated = { ...prev, ...newContent };
+            localStorage.setItem('cla-site-content', JSON.stringify(updated));
+            return updated;
+        });
+    };
+
 
     // Initialization
     useEffect(() => {
@@ -100,8 +149,8 @@ export const useAppLogic = () => {
 
     // Persist dashboard state
     useEffect(() => {
+        localStorage.setItem('cla-last-subpage', dashboardSubPage);
         if (user) {
-            localStorage.setItem('cla-last-subpage', dashboardSubPage);
             if (selectedCaseId) {
                 localStorage.setItem('cla-last-case-id', selectedCaseId);
             } else {
@@ -493,7 +542,7 @@ export const useAppLogic = () => {
 
     // Other Handlers
     const showLegalPage = (title: string, type: 'terms' | 'privacy') => {
-        setLegalPageContent({ title, content: type === 'terms' ? termsContent : privacyContent });
+        setLegalPageContent({ title, content: type === 'terms' ? siteContent.terms : siteContent.privacy });
         handleSetCurrentPage('legal');
     };
 
@@ -532,6 +581,10 @@ export const useAppLogic = () => {
         setComplaintModalTarget, setChatOpen, setGmailInboxOpen, setToast, setReviewTarget, handleReviewSubmit,
         setDashboardSubPage, setSelectedCaseId, handleNotificationNavigation, setInboxOpen, setNotificationsOpen, openInbox, openNotifications,
         markAllNotificationsAsRead, markMessagesAsRead, markConversationAsRead, handleDocumentUpload, handleDeleteDocument, handleSendMessage,
-        setSelectedCaseForUpload, handleUpdateProfile, handleChangePassword, updateUserVerification, handleUpdateAppointment, toggleTheme, setTheme
+        setSelectedCaseForUpload, handleUpdateProfile, handleChangePassword, updateUserVerification, handleUpdateAppointment, toggleTheme, setTheme,
+        siteContent, updateSiteContent,
+        chatTargetUserId, setChatTargetUserId,
+        supportMessages, addSupportMessage
     };
+
 };

@@ -8,7 +8,23 @@ export interface Review {
 
 export type UserRole = 'citizen' | 'lawyer' | 'admin';
 export type VerificationStatus = 'Verified' | 'Pending' | 'Rejected' | 'PendingEmailVerification';
-export type DashboardSubPage = 'overview' | 'cases' | 'vault' | 'settings' | 'appointments' | 'profile' | 'verification' | 'notifications' | 'find-lawyers' | 'clients' | 'billing' | 'messages';
+export interface SiteContent {
+  about: {
+    mission: string;
+    vision: string;
+    values: string;
+  };
+  contact: {
+    email: string;
+    phone: string;
+    address: string;
+  };
+  privacy: string;
+  terms: string;
+}
+
+export type DashboardSubPage = 'overview' | 'cases' | 'vault' | 'settings' | 'appointments' | 'profile' | 'verification' | 'notifications' | 'find-lawyers' | 'clients' | 'billing' | 'messages' | 'content-management' | 'support';
+
 export type AppTheme = 'light' | 'dark' | 'system';
 
 export interface User {
@@ -19,7 +35,7 @@ export interface User {
   role: UserRole;
   avatar: string;
   verificationStatus: VerificationStatus;
-  
+
   // New detailed fields
   phone?: string;
   language?: 'Bangla' | 'English';
@@ -40,7 +56,7 @@ export interface User {
   // Verification fields
   verificationToken?: string;
   verificationTokenExpires?: number;
-  
+
   // Lawyer-specific properties
   specializations?: string[];
   experience?: number;
@@ -68,17 +84,17 @@ export interface Case {
 }
 
 export interface EvidenceDocument {
-    id: string;
-    name: string;
-    type: string;
-    size: number;
-    url: string;
-    uploadedAt: string;
-    caseId: string;
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url: string;
+  uploadedAt: string;
+  caseId: string;
 }
 
 
-export type Page = 'home' | 'about' | 'contact' | 'find-lawyers' | 'dashboard' | 'login' | 'reset-password' | 'legal' | 'email-verification' | 'insights';
+export type Page = 'home' | 'about' | 'contact' | 'find-lawyers' | 'dashboard' | 'login' | 'reset-password' | 'legal' | 'email-verification' | 'insights' | 'careers';
 
 export interface ChatMessage {
   sender: 'user' | 'ai';
@@ -95,9 +111,9 @@ export interface SimulatedEmail {
   read: boolean;
   timestamp: number;
   action?: {
-      type: 'VERIFY_EMAIL' | 'RESET_PASSWORD';
-      token: string;
-      buttonText: string;
+    type: 'VERIFY_EMAIL' | 'RESET_PASSWORD';
+    token: string;
+    buttonText: string;
   }
 }
 
@@ -147,6 +163,15 @@ export interface Message {
     url: string;
     size: number;
   };
+}
+
+export interface SupportMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  timestamp: number;
+  status: 'New' | 'Read' | 'Replied';
 }
 
 export interface ActivityLog {

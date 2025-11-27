@@ -37,6 +37,8 @@ import { LawyerMessages } from './lawyer/LawyerMessages';
 
 import { AdminVerification } from './admin/AdminVerification';
 import { AdminOverview } from './admin/AdminOverview';
+import { AdminContentManager } from './admin/AdminContentManager';
+import { AdminSupport } from './admin/AdminSupport';
 
 interface NavItem {
     id: string;
@@ -108,6 +110,8 @@ export const DashboardPage: React.FC = () => {
         const adminItems = [
             { id: 'overview', label: 'Overview', icon: DashboardIcon },
             { id: 'verification', label: 'Verification', icon: VerificationIcon },
+            { id: 'content-management', label: 'Content Management', icon: BriefcaseIcon }, // Reusing BriefcaseIcon for now
+            { id: 'support', label: 'Support Inbox', icon: MessageIcon },
             { id: 'settings', label: 'Settings', icon: SettingsIcon },
         ];
 
@@ -173,6 +177,8 @@ export const DashboardPage: React.FC = () => {
                 switch (subPage) {
                     case 'overview': return <AdminOverview />;
                     case 'verification': return <AdminVerification />;
+                    case 'content-management': return <AdminContentManager />;
+                    case 'support': return <AdminSupport />;
                     case 'settings': return <CitizenSettings />;
                     default: return <AdminOverview />;
                 }
@@ -263,6 +269,7 @@ export const DashboardPage: React.FC = () => {
                 allUsers={users}
                 onSendMessage={handleSendMessage}
                 markConversationAsRead={markConversationAsRead}
+                initialSelectedUserId={context.chatTargetUserId}
             />
             <NotificationsPanel
                 isOpen={isNotificationsOpen}

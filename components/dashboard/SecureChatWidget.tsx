@@ -13,6 +13,7 @@ interface SecureChatWidgetProps {
     allUsers: User[];
     onSendMessage: (text: string, receiverId: string) => void;
     markConversationAsRead: (senderId: string) => void;
+    initialSelectedUserId?: string | null;
 }
 
 const formatTime = (timestamp: number) => {
@@ -32,11 +33,18 @@ const formatDate = (timestamp: number) => {
 };
 
 export const SecureChatWidget: React.FC<SecureChatWidgetProps> = ({
-    isOpen, onClose, currentUser, messages, allUsers, onSendMessage, markConversationAsRead
+    isOpen, onClose, currentUser, messages, allUsers, onSendMessage, markConversationAsRead, initialSelectedUserId
 }) => {
     const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
     const [inputText, setInputText] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Update active conversation when initialSelectedUserId changes or widget opens
+    useEffect(() => {
+        if (isOpen && initialSelectedUserId) {
+            setActiveConversationId(initialSelectedUserId);
+        }
+    }, [isOpen, initialSelectedUserId]);
 
     // Group messages by conversation
     const conversations = useMemo(() => {
@@ -210,8 +218,8 @@ export const SecureChatWidget: React.FC<SecureChatWidgetProps> = ({
                                             {/* Attachment Bubble */}
                                             {msg.attachment && (
                                                 <div className={`mb-1 p-3 rounded-xl flex items-center gap-3 cursor-pointer hover:opacity-90 transition-opacity ${isMe
-                                                        ? 'bg-cla-gold text-cla-text-darker'
-                                                        : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10'
+                                                    ? 'bg-cla-gold text-cla-text-darker'
+                                                    : 'bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10'
                                                     }`}>
                                                     <div className={`p-2 rounded-lg ${isMe ? 'bg-white/20' : 'bg-gray-100 dark:bg-white/5'}`}>
                                                         <PaperClipIcon className="w-5 h-5" />
@@ -226,8 +234,8 @@ export const SecureChatWidget: React.FC<SecureChatWidgetProps> = ({
                                             {/* Text Bubble */}
                                             {msg.text && (
                                                 <div className={`rounded-2xl px-4 py-2.5 text-sm relative shadow-sm ${isMe
-                                                        ? 'bg-cla-gold text-cla-text-darker rounded-br-none'
-                                                        : 'bg-white dark:bg-[#1A1A1A] text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-white/5 rounded-bl-none'
+                                                    ? 'bg-cla-gold text-cla-text-darker rounded-br-none'
+                                                    : 'bg-white dark:bg-[#1A1A1A] text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-white/5 rounded-bl-none'
                                                     }`}>
                                                     <p>{msg.text}</p>
                                                     <span className={`text-[10px] block text-right mt-1 opacity-70 ${isMe ? 'text-cla-text-darker' : 'text-gray-400'}`}>

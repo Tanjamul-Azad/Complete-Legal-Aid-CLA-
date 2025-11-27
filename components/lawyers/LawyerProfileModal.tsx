@@ -4,7 +4,7 @@ import { AppContext } from '../../context/AppContext';
 import { StarIcon, CloseIcon } from '../icons';
 
 export const LawyerProfileModal: React.FC<{ lawyer: User, onClose: () => void }> = ({ lawyer, onClose }) => {
-    const { user: currentUser, goToAuth } = useContext(AppContext);
+    const { user: currentUser, goToAuth, setChatTargetUserId, setInboxOpen } = useContext(AppContext);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
@@ -22,8 +22,8 @@ export const LawyerProfileModal: React.FC<{ lawyer: User, onClose: () => void }>
         alert(`Appointment with ${lawyer.name} on ${selectedDate} at ${selectedTime} has been requested.`);
         onClose();
     };
-    
-    const availableDates = Object.keys(lawyer.availability || {}).sort((a,b) => new Date(a).getTime() - new Date(b).getTime());
+
+    const availableDates = Object.keys(lawyer.availability || {}).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] animate-modal-fade-in p-4">
@@ -80,7 +80,7 @@ export const LawyerProfileModal: React.FC<{ lawyer: User, onClose: () => void }>
                                     )}
                                 </div>
                             </div>
-                            
+
                             <div className="border-t border-cla-border dark:border-white/5 my-6"></div>
 
                             <div>
@@ -98,12 +98,12 @@ export const LawyerProfileModal: React.FC<{ lawyer: User, onClose: () => void }>
                                             <label className="block text-sm font-medium text-cla-text dark:text-cla-text-dark">Select Time</label>
                                             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2">
                                                 {lawyer.availability[selectedDate]?.map(time => (
-                                                    <button 
-                                                        key={time} 
-                                                        onClick={() => setSelectedTime(time)} 
+                                                    <button
+                                                        key={time}
+                                                        onClick={() => setSelectedTime(time)}
                                                         className={`px-3 py-2 rounded-lg text-sm text-center border transition-all duration-200 shadow-sm transform active:scale-105
-                                                            ${selectedTime === time 
-                                                                ? 'bg-cla-gold text-white font-bold border-cla-gold shadow-lg shadow-cla-gold/20' 
+                                                            ${selectedTime === time
+                                                                ? 'bg-cla-gold text-white font-bold border-cla-gold shadow-lg shadow-cla-gold/20'
                                                                 : 'bg-cla-surface dark:bg-cla-bg-dark hover:border-cla-gold text-cla-text dark:text-cla-text-dark border-cla-border dark:border-cla-border-dark hover:shadow-md hover:-translate-y-0.5'
                                                             }`}
                                                     >
@@ -118,8 +118,24 @@ export const LawyerProfileModal: React.FC<{ lawyer: User, onClose: () => void }>
                         </div>
                     </div>
                 </div>
-                <div className="p-6 border-t border-cla-border dark:border-white/5 flex-shrink-0">
-                    <button onClick={handleBooking} disabled={!selectedTime && !!currentUser} className="w-full py-3 bg-cla-gold text-cla-text font-bold rounded-lg hover:bg-cla-gold-darker disabled:bg-gray-400 dark:disabled:bg-gray-600 transition-colors">
+                <div className="p-6 border-t border-cla-border dark:border-white/5 flex-shrink-0 flex gap-4">
+                    <button
+                        onClick={() => {
+                            if (!currentUser) {
+                                alert("Please sign in to message this lawyer.");
+                                goToAuth('login');
+                                onClose();
+                                return;
+                            }
+                            setChatTargetUserId(lawyer.id);
+                            setInboxOpen(true);
+                            onClose();
+                        }}
+                        className="flex-1 py-3 bg-white dark:bg-white/5 text-cla-text dark:text-white font-bold rounded-lg border border-cla-border dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                    >
+                        Message
+                    </button>
+                    <button onClick={handleBooking} disabled={!selectedTime && !!currentUser} className="flex-[2] py-3 bg-cla-gold text-cla-text font-bold rounded-lg hover:bg-cla-gold-darker disabled:bg-gray-400 dark:disabled:bg-gray-600 transition-colors">
                         {!currentUser ? 'Sign In to Book' : selectedTime ? `Request Appointment at ${selectedTime}` : 'Select a Time Slot'}
                     </button>
                 </div>
