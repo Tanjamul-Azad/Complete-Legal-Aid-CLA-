@@ -31,6 +31,7 @@ interface EmergencyHelpModalProps {
     onFindLawyer: () => void;
     onLiveChat: () => void;
     onMakeComplaint: (helpline: { name: string; email: string }) => void;
+    onSendAlert?: (location: { lat: number; lng: number; address?: string }) => void;
 }
 
 // --- Types for Maps ---
@@ -214,7 +215,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
     return R * c;
 };
 
-export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({ isOpen, onClose, onReport, onFindLawyer }) => {
+export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({ isOpen, onClose, onReport, onFindLawyer, onSendAlert }) => {
     const [locationPermission, setLocationPermission] = useState(false);
     const [isLocating, setIsLocating] = useState(false);
     const [alertSent, setAlertSent] = useState(false);
@@ -414,6 +415,12 @@ export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({ isOpen, 
     const handleSendAlert = () => {
         if (window.confirm("CONFIRM EMERGENCY ALERT?\n\nThis will instantly notify CLA Emergency Responders and share your location.\n\nAre you sure?")) {
             setAlertSent(true);
+            // Send actual alert
+            if (onSendAlert) {
+                // Use current coords if available, otherwise default
+                const location = currentCoords || { lat: 23.8103, lng: 90.4125 };
+                onSendAlert({ ...location, address: 'Unknown Location' }); // In real app, reverse geocode here
+            }
         }
     };
 

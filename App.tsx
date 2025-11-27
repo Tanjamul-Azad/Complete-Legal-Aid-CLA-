@@ -177,7 +177,8 @@ const AppContent: React.FC = () => {
 
     const {
         currentPage, isEmergencyHelpOpen, isEmergencyReportOpen, complaintModalTarget, isChatOpen, toast, simulatedEmails, isGmailInboxOpen, isGoogleAuthOpen, users, reviewTarget,
-        onSimulateGoogleLogin, handleEmailVerification, handleReadEmail, handleHireLawyerClick, handleFindLawyerFromEmergency, handleLiveChatFromEmergency, handleMakeComplaint, setEmergencyHelpOpen, setEmergencyReportOpen, setComplaintModalTarget, setChatOpen, setGoogleAuthOpen, setGmailInboxOpen, setToast, handleSetCurrentPage, setReviewTarget, handleReviewSubmit
+        onSimulateGoogleLogin, handleEmailVerification, handleReadEmail, handleHireLawyerClick, handleFindLawyerFromEmergency, handleLiveChatFromEmergency, handleMakeComplaint, setEmergencyHelpOpen, setEmergencyReportOpen, setComplaintModalTarget, setChatOpen, setGoogleAuthOpen, setGmailInboxOpen, setToast, handleSetCurrentPage, setReviewTarget, handleReviewSubmit,
+        aiChatInitialPrompt, setAiChatInitialPrompt
     } = context;
 
     const isDashboard = currentPage === 'dashboard';
@@ -230,7 +231,13 @@ const AppContent: React.FC = () => {
                 />
             )}
 
-            <AiChatbot isOpen={isChatOpen} setIsOpen={setChatOpen} onHireLawyerClick={handleHireLawyerClick} />
+            <AiChatbot
+                isOpen={isChatOpen}
+                setIsOpen={setChatOpen}
+                onHireLawyerClick={handleHireLawyerClick}
+                initialPrompt={aiChatInitialPrompt}
+                onInitialPromptSent={() => setAiChatInitialPrompt(null)}
+            />
 
             <Toast show={!!toast} message={toast?.message || ''} type={toast?.type} onDismiss={() => setToast(null)} />
 

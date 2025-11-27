@@ -168,7 +168,7 @@ export const SecureChatWidget: React.FC<SecureChatWidgetProps> = ({
                                 <button
                                     key={convo.user.id}
                                     onClick={() => setActiveConversationId(convo.user.id)}
-                                    className="w-full p-3 flex items-center gap-3 bg-white dark:bg-[#151515] rounded-xl hover:bg-gray-50 dark:hover:bg-[#1A1A1A] transition-colors text-left border border-transparent hover:border-gray-200 dark:hover:border-white/5"
+                                    className="w-full p-3 flex items-center gap-3 bg-white dark:bg-[#151515] rounded-xl hover:bg-gray-50 dark:hover:bg-cla-gold/5 transition-all duration-200 text-left border border-transparent hover:border-gray-200 dark:hover:border-cla-gold/20 hover:shadow-sm"
                                 >
                                     <div className="relative">
                                         <img src={convo.user.avatar} alt={convo.user.name} className="w-12 h-12 rounded-full" />

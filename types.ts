@@ -23,7 +23,7 @@ export interface SiteContent {
   terms: string;
 }
 
-export type DashboardSubPage = 'overview' | 'cases' | 'vault' | 'settings' | 'appointments' | 'profile' | 'verification' | 'notifications' | 'find-lawyers' | 'clients' | 'billing' | 'messages' | 'content-management' | 'support';
+export type DashboardSubPage = 'overview' | 'cases' | 'vault' | 'settings' | 'appointments' | 'profile' | 'verification' | 'notifications' | 'find-lawyers' | 'clients' | 'billing' | 'messages' | 'content-management' | 'support' | 'audit-logs' | 'system-logs' | 'admin-users' | 'admin-cases';
 
 export type AppTheme = 'light' | 'dark' | 'system';
 
@@ -180,4 +180,18 @@ export interface ActivityLog {
   message: string;
   timestamp: string; // e.g., "2h ago"
   caseId?: string;
+}
+
+export interface EmergencyAlert {
+  id: string;
+  userId: string;
+  userName: string;
+  userPhone?: string;
+  location: {
+    lat: number;
+    lng: number;
+    address?: string;
+  };
+  timestamp: number;
+  status: 'Active' | 'Resolved' | 'False Alarm';
 }

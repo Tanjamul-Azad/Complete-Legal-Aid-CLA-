@@ -104,7 +104,7 @@ export const LawyerProfileModal: React.FC<{ lawyer: User, onClose: () => void }>
                                                         className={`px-3 py-2 rounded-lg text-sm text-center border transition-all duration-200 shadow-sm transform active:scale-105
                                                             ${selectedTime === time
                                                                 ? 'bg-cla-gold text-white font-bold border-cla-gold shadow-lg shadow-cla-gold/20'
-                                                                : 'bg-cla-surface dark:bg-cla-bg-dark hover:border-cla-gold text-cla-text dark:text-cla-text-dark border-cla-border dark:border-cla-border-dark hover:shadow-md hover:-translate-y-0.5'
+                                                                : 'bg-cla-surface dark:bg-cla-bg-dark hover:border-cla-gold text-cla-text dark:text-cla-text-dark border-cla-border dark:border-cla-border-dark hover:shadow-lg hover:shadow-cla-gold/10 hover:-translate-y-0.5 dark:hover:bg-cla-gold/5'
                                                             }`}
                                                     >
                                                         {time}
@@ -131,7 +131,7 @@ export const LawyerProfileModal: React.FC<{ lawyer: User, onClose: () => void }>
                             setInboxOpen(true);
                             onClose();
                         }}
-                        className="flex-1 py-3 bg-white dark:bg-white/5 text-cla-text dark:text-white font-bold rounded-lg border border-cla-border dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                        className="flex-1 py-3 bg-white dark:bg-white/5 text-cla-text dark:text-white font-bold rounded-lg border border-cla-border dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 hover:border-cla-gold/50 dark:hover:border-cla-gold/50 transition-all duration-200"
                     >
                         Message
                     </button>

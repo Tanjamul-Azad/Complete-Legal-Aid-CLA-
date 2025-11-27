@@ -20,13 +20,13 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
                         <li key={index} className="inline-flex items-center">
                             {index > 0 && <ChevronRightIcon className="w-4 h-4 text-cla-text-muted dark:text-cla-text-muted-dark mx-1" />}
                             {isLast ? (
-                                <span className="text-sm font-medium text-cla-text-dark truncate max-w-xs">
+                                <span className="text-sm font-medium text-cla-text dark:text-white truncate max-w-xs">
                                     {item.label}
                                 </span>
                             ) : (
                                 <button
                                     onClick={item.onClick}
-                                    className="inline-flex items-center text-sm font-medium text-cla-text-muted-dark hover:text-cla-gold"
+                                    className="inline-flex items-center text-sm font-medium text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-gold transition-colors"
                                 >
                                     {item.label}
                                 </button>

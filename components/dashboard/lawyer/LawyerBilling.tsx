@@ -2,10 +2,10 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AppContext } from '../../../context/AppContext';
 import { BanknotesIcon } from '../../icons';
-import { 
-    getPaymentSummary, 
-    getPaymentHistory, 
-    getPayoutMethods, 
+import {
+    getPaymentSummary,
+    getPaymentHistory,
+    getPayoutMethods,
     savePayoutMethods,
     getInvoices,
     getInvoiceById,
@@ -16,6 +16,7 @@ import {
 } from '../../../services/paymentService';
 import { PayoutSettingsModal } from './PayoutSettingsModal';
 import { InvoiceDetailsModal } from './InvoiceDetailsModal';
+import { CreateInvoiceModal } from './CreateInvoiceModal';
 
 export const LawyerBilling: React.FC = () => {
     const context = useContext(AppContext);
@@ -24,6 +25,7 @@ export const LawyerBilling: React.FC = () => {
     const [payoutMethods, setPayoutMethods] = useState<PayoutMethods | null>(null);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isCreateInvoiceOpen, setIsCreateInvoiceOpen] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -68,7 +70,25 @@ export const LawyerBilling: React.FC = () => {
     };
 
     const handleCreateInvoice = () => {
-        context?.setToast({ message: "Invoice creation feature coming soon!", type: 'success' });
+        setIsCreateInvoiceOpen(true);
+    };
+
+    const handleCreateInvoiceSubmit = (data: any) => {
+        // Simulate creating invoice
+        const newInvoice: Invoice = {
+            id: `INV-${Math.floor(Math.random() * 10000)}`,
+            clientName: data.clientName,
+            caseTitle: data.caseTitle,
+            amount: Number(data.amount),
+            issuedDate: new Date().toISOString(),
+            dueDate: data.dueDate,
+            status: 'unpaid',
+            caseId: `CASE-${Math.floor(Math.random() * 1000)}`,
+            lawyerName: context?.user?.name || 'Lawyer',
+            method: 'Pending'
+        };
+        setInvoices([newInvoice, ...invoices]);
+        context?.setToast({ message: "Invoice created successfully!", type: 'success' });
     };
 
     if (isLoading) {
@@ -167,7 +187,7 @@ export const LawyerBilling: React.FC = () => {
 
             {/* Lower Section */}
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr),minmax(0,1.5fr)]">
-                
+
                 {/* Pending Payouts */}
                 <div className="rounded-2xl bg-white dark:bg-[#050816]
                             border border-slate-200 dark:border-slate-800
@@ -244,11 +264,10 @@ export const LawyerBilling: React.FC = () => {
                                         <td className="py-3 px-3 text-slate-500 dark:text-slate-400">{item.service}</td>
                                         <td className="py-3 px-3 text-right text-slate-900 dark:text-slate-200 font-semibold">৳ {item.amount.toLocaleString()}</td>
                                         <td className="py-3 px-3 text-right">
-                                            <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${
-                                                item.status === 'paid' 
-                                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' 
-                                                    : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
-                                            }`}>
+                                            <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${item.status === 'paid'
+                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
+                                                : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                                                }`}>
                                                 {item.status}
                                             </span>
                                         </td>
@@ -266,7 +285,7 @@ export const LawyerBilling: React.FC = () => {
                     <h2 className="text-sm font-bold text-slate-900 dark:text-slate-50">
                         Invoices
                     </h2>
-                    <button 
+                    <button
                         onClick={handleCreateInvoice}
                         className="text-[11px] font-bold text-cla-gold hover:text-cla-gold-darker uppercase tracking-wide transition-colors"
                     >
@@ -290,8 +309,8 @@ export const LawyerBilling: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {invoices.map((inv) => (
-                                <tr 
-                                    key={inv.id} 
+                                <tr
+                                    key={inv.id}
                                     className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
                                     onClick={() => handleViewInvoice(inv.id)}
                                 >
@@ -302,11 +321,10 @@ export const LawyerBilling: React.FC = () => {
                                     <td className="py-3 px-3 text-slate-500 dark:text-slate-400">{new Date(inv.dueDate).toLocaleDateString()}</td>
                                     <td className="py-3 px-3 text-right font-semibold text-slate-900 dark:text-slate-100">৳ {inv.amount.toLocaleString()}</td>
                                     <td className="py-3 px-3 text-right">
-                                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${
-                                            inv.status === 'paid' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' :
+                                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${inv.status === 'paid' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' :
                                             inv.status === 'unpaid' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400' :
-                                            'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
-                                        }`}>
+                                                'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
+                                            }`}>
                                             {inv.status}
                                         </span>
                                     </td>
@@ -329,9 +347,9 @@ export const LawyerBilling: React.FC = () => {
                 </div>
             </div>
 
-            <PayoutSettingsModal 
-                isOpen={isSettingsOpen} 
-                onClose={() => setIsSettingsOpen(false)} 
+            <PayoutSettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
                 currentSettings={payoutMethods}
                 onSave={handleSaveSettings}
             />
@@ -340,6 +358,12 @@ export const LawyerBilling: React.FC = () => {
                 isOpen={!!selectedInvoice}
                 onClose={() => setSelectedInvoice(null)}
                 invoice={selectedInvoice}
+            />
+
+            <CreateInvoiceModal
+                isOpen={isCreateInvoiceOpen}
+                onClose={() => setIsCreateInvoiceOpen(false)}
+                onSubmit={handleCreateInvoiceSubmit}
             />
         </section>
     );

@@ -6,6 +6,7 @@ import {
     ChevronRightIcon, DocumentTextIcon, BookOpenIcon, WarningIcon, RobotIcon,
     LockClosedIcon, StarIcon, MessageIcon, ClockIcon, DocumentCloudIcon, ScaleIcon, BuildingOfficeIcon
 } from '../../icons';
+import { DashboardCard } from '../StatCard';
 
 // --- Helper Components ---
 
@@ -16,12 +17,6 @@ const SectionHeader: React.FC<{ icon: React.ReactNode, title: string, className?
             <h3 className="text-lg font-bold text-cla-text dark:text-cla-text-dark">{title}</h3>
             {typeof count !== 'undefined' && <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-cla-gold/20 text-cla-gold-darker dark:text-cla-gold">{count} items</span>}
         </div>
-    </div>
-);
-
-const ClickableWidget: React.FC<{ onClick: () => void; children: React.ReactNode; className?: string }> = ({ onClick, children, className }) => (
-    <div onClick={onClick} className={`bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark rounded-xl transition-all duration-300 hover:ring-2 hover:ring-cla-gold cursor-pointer transform hover:-translate-y-0.5 hover:shadow-xl hover:shadow-cla-gold/10 ${className}`}>
-        {children}
     </div>
 );
 
@@ -128,7 +123,7 @@ export const CitizenOverview: React.FC = () => {
     const {
         users: allUsers, appointments, cases, messages, evidenceDocuments, notifications,
         setDashboardSubPage, setReviewTarget, setChatOpen, setSelectedCaseId,
-        openInbox, setSelectedCaseForUpload, handleNotificationNavigation
+        openInbox, setSelectedCaseForUpload, handleNotificationNavigation, setAiChatInitialPrompt
     } = context;
 
     const documentCount = evidenceDocuments.filter(doc => cases.some(c => c.id === doc.caseId && c.clientId === user.id)).length;
@@ -216,13 +211,13 @@ export const CitizenOverview: React.FC = () => {
 
                     <section className="animate-fade-in-up mt-8" style={{ animationDelay: '200ms' }}>
                         <SectionHeader icon={<BriefcaseIcon className="w-6 h-6 text-cla-gold" />} title="Active Cases" />
-                        <ClickableWidget onClick={() => setDashboardSubPage('cases')} className="p-6">
-                            <div className="flex justify-between items-center mb-4">
+                        <DashboardCard onClick={() => setDashboardSubPage('cases')} className="p-6">
+                            <div className="flex justify-between items-center mb-4 relative z-20">
                                 <h3 className="text-lg font-semibold text-cla-text dark:text-cla-text-dark">Case Progress</h3>
                                 <div className="flex items-center text-sm text-cla-gold hover:underline"><span>View All</span><ChevronRightIcon className="w-4 h-4 ml-1" /></div>
                             </div>
                             {activeCases.length > 0 ? (
-                                <div className="space-y-6">
+                                <div className="space-y-6 relative z-20">
                                     {activeCases.slice(0, 3).map(c => {
                                         const steps = ['Submitted', 'In Review', 'Scheduled', 'Resolved'];
                                         const currentStep = steps.indexOf(c.status);
@@ -242,18 +237,18 @@ export const CitizenOverview: React.FC = () => {
                                     })}
                                 </div>
                             ) : (
-                                <div className="text-center py-12">
+                                <div className="text-center py-12 relative z-20">
                                     <DocumentTextIcon className="w-12 h-12 text-cla-text-muted dark:text-cla-text-muted-dark mx-auto opacity-50" />
                                     <p className="mt-3 text-cla-text-muted dark:text-cla-text-muted-dark font-medium">You have no active cases.</p>
                                 </div>
                             )}
-                        </ClickableWidget>
+                        </DashboardCard>
                     </section>
 
                     <section className="animate-fade-in-up mt-8" style={{ animationDelay: '300ms' }}>
                         <SectionHeader icon={<ClockIcon className="w-6 h-6 text-cla-gold" />} title="Recent Activity" />
-                        <div className="bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark p-6 rounded-xl">
-                            <div className="space-y-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        <DashboardCard className="p-6">
+                            <div className="space-y-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar relative z-20">
                                 {displayedActivity.length > 0 ? displayedActivity.slice(0, 5).map((log, index) => {
                                     const type = getActivityType(log.message);
                                     const iconColors = { upload: 'text-blue-500 bg-blue-500/10', update: 'text-cla-gold bg-cla-gold/10', appointment: 'text-green-500 bg-green-500/10', message: 'text-purple-500 bg-purple-500/10', default: 'text-gray-500 bg-gray-500/10' };
@@ -273,7 +268,7 @@ export const CitizenOverview: React.FC = () => {
                                     <p className="text-cla-text-muted dark:text-cla-text-muted-dark text-center py-4">No recent activity.</p>
                                 )}
                             </div>
-                        </div>
+                        </DashboardCard>
                     </section>
                 </div>
 
@@ -281,9 +276,9 @@ export const CitizenOverview: React.FC = () => {
                 <div className="space-y-8">
                     <section className="animate-fade-in-up mt-8" style={{ animationDelay: '400ms' }}>
                         <SectionHeader icon={<CalendarIcon className="w-6 h-6 text-cla-gold" />} title="My Schedule" />
-                        <ClickableWidget onClick={() => setDashboardSubPage('appointments')} className="p-5">
+                        <DashboardCard onClick={() => setDashboardSubPage('appointments')} className="p-5">
                             {upcomingAppointments.length > 0 ? (
-                                <div className="space-y-4">
+                                <div className="space-y-4 relative z-20">
                                     {upcomingAppointments.slice(0, 2).map(appt => (
                                         <div key={appt.id} className="flex items-center gap-3 pb-3 border-b border-cla-border dark:border-white/5 last:border-0 last:pb-0">
                                             {/* Reduced date badge size by ~15% */}
@@ -302,38 +297,50 @@ export const CitizenOverview: React.FC = () => {
                                     )}
                                 </div>
                             ) : (
-                                <div className="text-center py-4">
+                                <div className="text-center py-4 relative z-20">
                                     <p className="font-medium text-sm text-cla-text-muted dark:text-cla-text-muted-dark mb-3">No upcoming appointments.</p>
                                     <button onClick={(e) => { e.stopPropagation(); setDashboardSubPage('find-lawyers'); }} className="w-full px-4 py-2 text-xs font-bold uppercase tracking-wide bg-cla-gold/10 text-cla-gold-darker dark:text-cla-gold rounded-lg hover:bg-cla-gold/20 transition-colors">Book Consultation</button>
                                 </div>
                             )}
-                        </ClickableWidget>
+                        </DashboardCard>
                     </section>
 
                     <section className="animate-fade-in-up mt-8" style={{ animationDelay: '500ms' }}>
                         <SectionHeader icon={<VaultIcon className="w-6 h-6 text-cla-gold" />} title="Evidence Vault" />
-                        <ClickableWidget onClick={() => setDashboardSubPage('vault')} className="p-6 text-center bg-gradient-to-b from-white to-gray-50 dark:from-[#1E1E1E] dark:to-[#151515]">
-                            <p className="text-5xl font-bold text-cla-text dark:text-white">{documentCount}</p>
-                            <p className="text-cla-text-muted dark:text-gray-400 mt-1 text-xs font-bold uppercase tracking-wider">Documents Secured</p>
-                            <div className="flex items-center justify-center gap-1.5 mt-4 text-[10px] font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20 py-1 px-2 rounded-full inline-flex">
-                                <LockClosedIcon className="w-3 h-3" />
-                                <span className="tracking-tight">AES-256 Encrypted</span>
+                        <DashboardCard onClick={() => setDashboardSubPage('vault')} className="p-6 text-center bg-gradient-to-b from-white to-gray-50 dark:from-[#1E1E1E] dark:to-[#151515]">
+                            <div className="relative z-20">
+                                <p className="text-5xl font-bold text-cla-text dark:text-white">{documentCount}</p>
+                                <p className="text-cla-text-muted dark:text-gray-400 mt-1 text-xs font-bold uppercase tracking-wider">Documents Secured</p>
+                                <div className="flex items-center justify-center gap-1.5 mt-4 text-[10px] font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20 py-1 px-2 rounded-full inline-flex">
+                                    <LockClosedIcon className="w-3 h-3" />
+                                    <span className="tracking-tight">AES-256 Encrypted</span>
+                                </div>
                             </div>
-                        </ClickableWidget>
+                        </DashboardCard>
                     </section>
 
                     <section className="animate-fade-in-up mt-8" style={{ animationDelay: '600ms' }}>
-                        <div className="bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark p-5 rounded-xl">
-                            <SectionHeader icon={<RobotIcon className="w-6 h-6 text-cla-gold" />} title="Quick AI Help" className="mb-2" />
-                            <div className="space-y-2 text-sm mt-3">
-                                <button onClick={() => setChatOpen(true)} className="w-full text-left p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium">
+                        <DashboardCard className="p-5">
+                            <SectionHeader icon={<RobotIcon className="w-6 h-6 text-cla-gold" />} title="Quick AI Help" className="mb-2 relative z-20" />
+                            <div className="grid grid-cols-2 gap-2 mt-3 mb-3 relative z-20">
+                                <button onClick={() => { setAiChatInitialPrompt("Please summarize this document for me. [Upload Placeholder]"); setChatOpen(true); }} className="flex flex-col items-center justify-center p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all">
+                                    <BookOpenIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
+                                    <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 text-center">Summarize Doc</span>
+                                </button>
+                                <button onClick={() => { setAiChatInitialPrompt("Draft an affidavit for me regarding..."); setChatOpen(true); }} className="flex flex-col items-center justify-center p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all">
+                                    <DocumentTextIcon className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-1" />
+                                    <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 text-center">Draft Affidavit</span>
+                                </button>
+                            </div>
+                            <div className="space-y-2 text-sm relative z-20">
+                                <button onClick={() => setChatOpen(true)} className="w-full text-left p-2.5 rounded-lg bg-gray-50 dark:bg-white/5 text-cla-text dark:text-cla-text-dark hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-xs font-medium border border-cla-border dark:border-white/10">
                                     "How to file a GD?"
                                 </button>
-                                <button onClick={() => setChatOpen(true)} className="w-full text-left p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-xs font-medium">
+                                <button onClick={() => setChatOpen(true)} className="w-full text-left p-2.5 rounded-lg bg-gray-50 dark:bg-white/5 text-cla-text dark:text-cla-text-dark hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-xs font-medium border border-cla-border dark:border-white/10">
                                     "Labor dispute rights?"
                                 </button>
                             </div>
-                        </div>
+                        </DashboardCard>
                     </section>
 
                     <section className="animate-fade-in-up mt-8" style={{ animationDelay: '800ms' }}>

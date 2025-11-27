@@ -5,26 +5,7 @@ import {
     ClipboardDocumentCheckIcon, BanknotesIcon, GavelIcon, SparklesIcon, BookOpenIcon, ChevronRightIcon, CloseIcon
 } from '../../icons';
 import { TaskManagerModal, type ManualTask } from './TaskManagerModal';
-
-const MetricCard: React.FC<{ icon: React.ReactNode, value: string, label: string, subtext: string, onClick?: () => void }> = ({ icon, value, label, subtext, onClick }) => (
-    <div
-        onClick={onClick}
-        className="p-5 rounded-xl bg-white dark:bg-[#050816] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-150 hover:-translate-y-[2px] cursor-pointer flex flex-col justify-between"
-    >
-        <div className="flex items-start justify-between">
-            <div>
-                <p className="text-xs uppercase tracking-wide text-cla-text-muted dark:text-cla-text-muted-dark font-semibold">{label}</p>
-                <p className="mt-3 text-3xl font-bold text-cla-text dark:text-white">{value}</p>
-                <p className="mt-1 text-xs text-cla-text-muted dark:text-cla-text-muted-dark font-medium">
-                    {subtext}
-                </p>
-            </div>
-            <div className="h-10 w-10 rounded-full bg-cla-gold/10 flex items-center justify-center text-cla-gold">
-                {icon}
-            </div>
-        </div>
-    </div>
-);
+import { StatCard, DashboardCard } from '../StatCard';
 
 const ActivityItem: React.FC<{ icon: React.ReactNode, text: React.ReactNode, time: string, isLast?: boolean }> = ({ icon, text, time, isLast }) => (
     <div className="relative flex items-start gap-4">
@@ -288,13 +269,13 @@ export const LawyerOverview: React.FC = () => {
             {/* Row 1: Metric Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                    <MetricCard icon={<BriefcaseIcon className="w-5 h-5" />} value="12" label="Active Cases" subtext="3 in Hearing this week" onClick={() => setDashboardSubPage('cases')} />
+                    <StatCard icon={<BriefcaseIcon className="w-5 h-5" />} value="12" label="Active Cases" subtext="3 in Hearing this week" onClick={() => setDashboardSubPage('cases')} />
                 </div>
                 <div className="animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-                    <MetricCard icon={<GavelIcon className="w-5 h-5" />} value="4" label="Hearings" subtext="Next: Thu 10:30 AM" onClick={() => setDashboardSubPage('appointments')} />
+                    <StatCard icon={<GavelIcon className="w-5 h-5" />} value="4" label="Hearings" subtext="Next: Thu 10:30 AM" onClick={() => setDashboardSubPage('appointments')} />
                 </div>
                 <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                    <MetricCard
+                    <StatCard
                         icon={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
                         value={pendingTaskCount.toString()}
                         label="Tasks"
@@ -303,201 +284,207 @@ export const LawyerOverview: React.FC = () => {
                     />
                 </div>
                 <div className="animate-fade-in-up" style={{ animationDelay: '250ms' }}>
-                    <MetricCard icon={<BanknotesIcon className="w-5 h-5" />} value="12.5h" label="Billable Hours" subtext="Tracked this week" onClick={() => setDashboardSubPage('billing')} />
+                    <StatCard icon={<BanknotesIcon className="w-5 h-5" />} value="12.5h" label="Billable Hours" subtext="Tracked this week" onClick={() => setDashboardSubPage('billing')} />
                 </div>
             </div>
 
             {/* Row 2: Main Analytics Split */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 {/* Left 8/12: Analytics Case Pipeline */}
-                <div className="xl:col-span-8 bg-cla-surface dark:bg-cla-surface-dark p-8 rounded-2xl border border-cla-border dark:border-cla-border-dark shadow-sm animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-50">
-                                Case Overview
-                            </h2>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                                Breakdown of your cases by stage.
-                            </p>
+                <div className="xl:col-span-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                    <DashboardCard className="p-8 h-full">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h2 className="text-base font-semibold text-slate-800 dark:text-slate-50">
+                                    Case Overview
+                                </h2>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    Breakdown of your cases by stage.
+                                </p>
+                            </div>
+
+                            <div className="inline-flex rounded-full bg-slate-100 dark:bg-slate-900 p-1 text-xs relative z-20">
+                                {['This Week', 'This Month', '90 Days'].map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setCaseOverviewTab(tab)}
+                                        className={`px-3 py-1 rounded-full transition-colors ${caseOverviewTab === tab
+                                            ? 'bg-brand text-white shadow-sm'
+                                            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                                            }`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
-                        <div className="inline-flex rounded-full bg-slate-100 dark:bg-slate-900 p-1 text-xs">
-                            {['This Week', 'This Month', '90 Days'].map(tab => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setCaseOverviewTab(tab)}
-                                    className={`px-3 py-1 rounded-full transition-colors ${caseOverviewTab === tab
-                                        ? 'bg-brand text-white shadow-sm'
-                                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-                                        }`}
-                                >
-                                    {tab}
-                                </button>
+                        {/* Analytics Chart */}
+                        <div className="space-y-4">
+                            {caseStages.map(stage => (
+                                <div key={stage.name} className="flex items-center gap-4 text-xs font-medium">
+                                    <div className="w-20 text-right text-cla-text-muted dark:text-cla-text-muted-dark">{stage.name}</div>
+                                    <div className="flex-1 h-3 bg-cla-bg dark:bg-cla-bg-dark rounded-full overflow-hidden relative z-10">
+                                        <div
+                                            className={`h-full rounded-full ${stage.color}`}
+                                            style={{ width: `${(stage.count / maxCount) * 100}%` }}
+                                        />
+                                    </div>
+                                    <div className="w-6 text-right text-cla-text dark:text-white font-bold">{stage.count}</div>
+                                </div>
                             ))}
                         </div>
-                    </div>
 
-                    {/* Analytics Chart */}
-                    <div className="space-y-4">
-                        {caseStages.map(stage => (
-                            <div key={stage.name} className="flex items-center gap-4 text-xs font-medium">
-                                <div className="w-20 text-right text-cla-text-muted dark:text-cla-text-muted-dark">{stage.name}</div>
-                                <div className="flex-1 h-3 bg-cla-bg dark:bg-cla-bg-dark rounded-full overflow-hidden">
-                                    <div
-                                        className={`h-full rounded-full ${stage.color}`}
-                                        style={{ width: `${(stage.count / maxCount) * 100}%` }}
-                                    />
-                                </div>
-                                <div className="w-6 text-right text-cla-text dark:text-white font-bold">{stage.count}</div>
+                        {/* Cases Needing Attention */}
+                        <div className="mt-6">
+                            <hr className="my-4 border-slate-200 dark:border-slate-800" />
+                            <h3 className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                Cases Needing Attention
+                            </h3>
+                            <div className="space-y-2 relative z-20">
+                                {/* Alert 1: Hearing */}
+                                <button
+                                    onClick={() => setDashboardSubPage('cases')}
+                                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-left hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10 transition-all duration-150 group"
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-slate-800 dark:text-slate-50">
+                                            Land Dispute – Savar (c#21)
+                                        </span>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                            Next hearing approaching. Review documents and prepare notes.
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-flex items-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap">
+                                            Hearing tomorrow
+                                        </span>
+                                        <span className="text-slate-400 dark:text-slate-500 text-lg group-hover:text-brand transition-colors">
+                                            ›
+                                        </span>
+                                    </div>
+                                </button>
+
+                                {/* Alert 2: Deadline */}
+                                <button
+                                    onClick={() => setDashboardSubPage('cases')}
+                                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-left hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10 transition-all duration-150 group"
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-slate-800 dark:text-slate-50">
+                                            Contract Review (c#34)
+                                        </span>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                            Client waiting for initial draft. Review partnership clauses.
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap">
+                                            Draft due in 2 days
+                                        </span>
+                                        <span className="text-slate-400 dark:text-slate-500 text-lg group-hover:text-brand transition-colors">
+                                            ›
+                                        </span>
+                                    </div>
+                                </button>
                             </div>
-                        ))}
-                    </div>
-
-                    {/* Cases Needing Attention */}
-                    <div className="mt-6">
-                        <hr className="my-4 border-slate-200 dark:border-slate-800" />
-                        <h3 className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
-                            Cases Needing Attention
-                        </h3>
-                        <div className="space-y-2">
-                            {/* Alert 1: Hearing */}
-                            <button
-                                onClick={() => setDashboardSubPage('cases')}
-                                className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-left hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10 transition-all duration-150 group"
-                            >
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-medium text-slate-800 dark:text-slate-50">
-                                        Land Dispute – Savar (c#21)
-                                    </span>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                                        Next hearing approaching. Review documents and prepare notes.
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="inline-flex items-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap">
-                                        Hearing tomorrow
-                                    </span>
-                                    <span className="text-slate-400 dark:text-slate-500 text-lg group-hover:text-brand transition-colors">
-                                        ›
-                                    </span>
-                                </div>
-                            </button>
-
-                            {/* Alert 2: Deadline */}
-                            <button
-                                onClick={() => setDashboardSubPage('cases')}
-                                className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-left hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10 transition-all duration-150 group"
-                            >
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-medium text-slate-800 dark:text-slate-50">
-                                        Contract Review (c#34)
-                                    </span>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                                        Client waiting for initial draft. Review partnership clauses.
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap">
-                                        Draft due in 2 days
-                                    </span>
-                                    <span className="text-slate-400 dark:text-slate-500 text-lg group-hover:text-brand transition-colors">
-                                        ›
-                                    </span>
-                                </div>
-                            </button>
                         </div>
-                    </div>
+                    </DashboardCard>
                 </div>
 
                 {/* Right 4/12: Schedule & Calendar */}
-                <div className="xl:col-span-4 bg-cla-surface dark:bg-cla-surface-dark p-6 rounded-2xl border border-cla-border dark:border-cla-border-dark shadow-sm animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-bold text-cla-text dark:text-white">My Schedule</h3>
-                        <div className="inline-flex rounded-lg bg-cla-bg dark:bg-cla-bg-dark p-1 text-xs font-medium">
-                            {['Day', 'Week', 'Month'].map(tab => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setScheduleTab(tab)}
-                                    className={`px-3 py-1 rounded-md transition-all ${scheduleTab === tab
-                                        ? 'bg-white dark:bg-cla-surface-dark text-cla-text dark:text-white shadow-sm font-semibold'
-                                        : 'text-cla-text-muted dark:text-cla-text-muted-dark'
-                                        }`}
-                                >
-                                    {tab}
-                                </button>
+                <div className="xl:col-span-4 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                    <DashboardCard className="p-6 h-full">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-bold text-cla-text dark:text-white">My Schedule</h3>
+                            <div className="inline-flex rounded-lg bg-cla-bg dark:bg-cla-bg-dark p-1 text-xs font-medium relative z-20">
+                                {['Day', 'Week', 'Month'].map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setScheduleTab(tab)}
+                                        className={`px-3 py-1 rounded-md transition-all ${scheduleTab === tab
+                                            ? 'bg-white dark:bg-cla-surface-dark text-cla-text dark:text-white shadow-sm font-semibold'
+                                            : 'text-cla-text-muted dark:text-cla-text-muted-dark'
+                                            }`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Week View */}
+                        <div className="flex justify-between text-center mb-6 px-2">
+                            {weekDays.map((day, i) => (
+                                <div key={day} className="flex flex-col items-center gap-2">
+                                    <span className="text-[10px] font-bold uppercase text-cla-text-muted dark:text-cla-text-muted-dark">{day}</span>
+                                    <span className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold transition-colors ${i === currentDayIndex
+                                        ? 'bg-cla-gold text-white shadow-lg shadow-cla-gold/30'
+                                        : 'text-cla-text dark:text-white hover:bg-cla-bg dark:hover:bg-cla-bg-dark'
+                                        }`}>
+                                        {new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + 1 + i)).getDate()}
+                                    </span>
+                                </div>
                             ))}
                         </div>
-                    </div>
 
-                    {/* Week View */}
-                    <div className="flex justify-between text-center mb-6 px-2">
-                        {weekDays.map((day, i) => (
-                            <div key={day} className="flex flex-col items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase text-cla-text-muted dark:text-cla-text-muted-dark">{day}</span>
-                                <span className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold transition-colors ${i === currentDayIndex
-                                    ? 'bg-cla-gold text-white shadow-lg shadow-cla-gold/30'
-                                    : 'text-cla-text dark:text-white hover:bg-cla-bg dark:hover:bg-cla-bg-dark'
-                                    }`}>
-                                    {new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + 1 + i)).getDate()}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Agenda List */}
-                    <div className="space-y-1">
-                        {todaysAppointments.length > 0 ? todaysAppointments.map(appt => (
-                            <div key={appt.id} className="flex items-center gap-4 p-3 hover:bg-cla-bg dark:hover:bg-cla-bg-dark rounded-xl transition-colors border border-transparent hover:border-cla-border dark:hover:border-cla-border-dark group">
-                                <div className="text-center min-w-[48px]">
-                                    <p className="text-xs font-bold text-cla-text dark:text-white">{appt.time.split(' ')[0]}</p>
-                                    <p className="text-[10px] text-cla-text-muted dark:text-cla-text-muted-dark uppercase">{appt.time.split(' ')[1]}</p>
+                        {/* Agenda List */}
+                        <div className="space-y-1 relative z-20">
+                            {todaysAppointments.length > 0 ? todaysAppointments.map(appt => (
+                                <div key={appt.id} className="flex items-center gap-4 p-3 hover:bg-cla-bg dark:hover:bg-cla-bg-dark rounded-xl transition-colors border border-transparent hover:border-cla-border dark:hover:border-cla-border-dark group">
+                                    <div className="text-center min-w-[48px]">
+                                        <p className="text-xs font-bold text-cla-text dark:text-white">{appt.time.split(' ')[0]}</p>
+                                        <p className="text-[10px] text-cla-text-muted dark:text-cla-text-muted-dark uppercase">{appt.time.split(' ')[1]}</p>
+                                    </div>
+                                    <div className="w-1 h-8 rounded-full bg-cla-gold/50 group-hover:bg-cla-gold transition-colors"></div>
+                                    <div className="flex-1 overflow-hidden">
+                                        <p className="font-semibold text-sm text-cla-text dark:text-white truncate">{appt.title || appt.type}</p>
+                                        <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark truncate">{appt.type} • {appt.mode}</p>
+                                    </div>
                                 </div>
-                                <div className="w-1 h-8 rounded-full bg-cla-gold/50 group-hover:bg-cla-gold transition-colors"></div>
-                                <div className="flex-1 overflow-hidden">
-                                    <p className="font-semibold text-sm text-cla-text dark:text-white truncate">{appt.title || appt.type}</p>
-                                    <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark truncate">{appt.type} • {appt.mode}</p>
+                            )) : (
+                                <div className="text-center py-8 bg-cla-bg/50 dark:bg-cla-bg-dark/50 rounded-xl border border-dashed border-cla-border dark:border-cla-border-dark">
+                                    <p className="text-sm text-cla-text-muted dark:text-cla-text-muted-dark font-medium">No events scheduled today.</p>
                                 </div>
-                            </div>
-                        )) : (
-                            <div className="text-center py-8 bg-cla-bg/50 dark:bg-cla-bg-dark/50 rounded-xl border border-dashed border-cla-border dark:border-cla-border-dark">
-                                <p className="text-sm text-cla-text-muted dark:text-cla-text-muted-dark font-medium">No events scheduled today.</p>
-                            </div>
-                        )}
-                    </div>
-                    <button onClick={() => setDashboardSubPage('appointments')} className="mt-6 w-full text-center py-2.5 text-xs font-bold uppercase tracking-wider text-cla-gold hover:bg-cla-gold/10 rounded-lg transition-colors border border-cla-gold/20 hover:border-cla-gold">
-                        View Full Calendar
-                    </button>
+                            )}
+                        </div>
+                        <button onClick={() => setDashboardSubPage('appointments')} className="mt-6 w-full text-center py-2.5 text-xs font-bold uppercase tracking-wider text-cla-gold hover:bg-cla-gold/10 rounded-lg transition-colors border border-cla-gold/20 hover:border-cla-gold relative z-20">
+                            View Full Calendar
+                        </button>
+                    </DashboardCard>
                 </div>
             </div>
 
             {/* Row 3: Secondary Insights */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 {/* Activity Timeline */}
-                <div className="xl:col-span-8 bg-cla-surface dark:bg-cla-surface-dark p-8 rounded-2xl border border-cla-border dark:border-cla-border-dark shadow-sm animate-fade-in-up" style={{ animationDelay: '500ms' }}>
-                    <h3 className="text-lg font-bold text-cla-text dark:text-white mb-6">Recent Activity</h3>
-                    <div className="space-y-6 pl-2">
-                        <ActivityItem icon={<MessageIcon className="w-4 h-4" />} text={<>New message from <strong className="text-cla-text dark:text-white">John Doe</strong> in Case c#21</>} time="5 min ago" />
-                        <ActivityItem icon={<DocumentCloudIcon className="w-4 h-4" />} text={<><strong className="text-cla-text dark:text-white">Partnership_Agreement_Final.pdf</strong> uploaded by client in Case c#34</>} time="20 min ago" />
-                        <ActivityItem icon={<CalendarIcon className="w-4 h-4" />} text={<>Appointment booked by <strong className="text-cla-text dark:text-white">Jane Smith</strong> for tomorrow</>} time="1 hour ago" isLast={true} />
-                    </div>
+                <div className="xl:col-span-8 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                    <DashboardCard className="p-8 h-full">
+                        <h3 className="text-lg font-bold text-cla-text dark:text-white mb-6">Recent Activity</h3>
+                        <div className="space-y-6 pl-2 relative z-20">
+                            <ActivityItem icon={<MessageIcon className="w-4 h-4" />} text={<>New message from <strong className="text-cla-text dark:text-white">John Doe</strong> in Case c#21</>} time="5 min ago" />
+                            <ActivityItem icon={<DocumentCloudIcon className="w-4 h-4" />} text={<><strong className="text-cla-text dark:text-white">Partnership_Agreement_Final.pdf</strong> uploaded by client in Case c#34</>} time="20 min ago" />
+                            <ActivityItem icon={<CalendarIcon className="w-4 h-4" />} text={<>Appointment booked by <strong className="text-cla-text dark:text-white">Jane Smith</strong> for tomorrow</>} time="1 hour ago" isLast={true} />
+                        </div>
+                    </DashboardCard>
                 </div>
 
                 {/* Intelligence & Tools (Smart Legal Research) */}
                 <div className="xl:col-span-4 space-y-6 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-                    <div className="bg-white dark:bg-cla-surface-dark p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <DashboardCard className="p-5 h-full">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50 flex items-center gap-2">
                                 <SparklesIcon className="w-4 h-4 text-brand" />
                                 Smart Legal Research
                             </h2>
-                            <button className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-brand transition-colors">
+                            <button className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-brand transition-colors relative z-20">
                                 View All Reports
                             </button>
                         </div>
 
                         {/* Search Input */}
-                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg mb-3">
+                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg mb-3 relative z-20">
                             <span className="text-slate-600 dark:text-slate-300">🔍</span>
                             <input
                                 type="text"
@@ -507,7 +494,7 @@ export const LawyerOverview: React.FC = () => {
                         </div>
 
                         {/* Snippets */}
-                        <div className="space-y-2 text-xs">
+                        <div className="space-y-2 text-xs relative z-20">
                             <div className="p-3 rounded-lg bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
                                 <p className="font-medium text-slate-800 dark:text-slate-200">
                                     Land Boundary Act – Section 14
@@ -529,12 +516,12 @@ export const LawyerOverview: React.FC = () => {
 
                         {/* CTA */}
                         <button
-                            className="mt-4 w-full px-4 py-2 rounded-full bg-brand text-white text-xs font-semibold hover:bg-brand-strong transition-all duration-150 shadow-sm hover:shadow-md"
+                            className="mt-4 w-full px-4 py-2 rounded-full bg-brand text-white text-xs font-semibold hover:bg-brand-strong transition-all duration-150 shadow-sm hover:shadow-md relative z-20"
                             onClick={() => setIsReportOpen(true)}
                         >
                             Generate Full Legal Report
                         </button>
-                    </div>
+                    </DashboardCard>
                 </div>
             </div>
 

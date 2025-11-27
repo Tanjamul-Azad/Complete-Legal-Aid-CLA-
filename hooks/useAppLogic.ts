@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import type { User, UserRole, Page, DashboardSubPage, SimulatedEmail, Notification, Case, Appointment, ActivityLog, Message, EvidenceDocument, Review, VerificationStatus, AppTheme, SiteContent, SupportMessage } from '../types';
+import type { User, UserRole, Page, DashboardSubPage, SimulatedEmail, Notification, Case, Appointment, ActivityLog, Message, EvidenceDocument, Review, VerificationStatus, AppTheme, SiteContent, SupportMessage, EmergencyAlert } from '../types';
 import { ALL_USERS, CASES, EVIDENCE_DOCUMENTS, NOTIFICATIONS, APPOINTMENTS, ACTIVITY_LOGS, MESSAGES } from '../constants';
 import { authService } from '../services/authService';
 import { caseService } from '../services/caseService';
@@ -41,6 +41,7 @@ export const useAppLogic = () => {
     const [isInboxOpen, setInboxOpen] = useState(false);
     const [isNotificationsOpen, setNotificationsOpen] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
+    const [aiChatInitialPrompt, setAiChatInitialPrompt] = useState<string | null>(null);
 
     // Data State
     // Initialize from localStorage if available to remember last visited page
@@ -69,6 +70,63 @@ export const useAppLogic = () => {
         const stored = localStorage.getItem('cla-support-messages');
         return stored ? JSON.parse(stored) : [];
     });
+
+    // Emergency Alerts State
+    const [emergencyAlerts, setEmergencyAlerts] = useState<EmergencyAlert[]>(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('cla-emergency-alerts');
+            return stored ? JSON.parse(stored) : [];
+        }
+        return [];
+    });
+
+    const sendEmergencyAlert = (location: { lat: number; lng: number; address?: string }) => {
+        if (!user) return;
+
+        const newAlert: EmergencyAlert = {
+            id: `alert-${Date.now()}`,
+            userId: user.id,
+            userName: user.name,
+            userPhone: user.phone || 'N/A',
+            location,
+            timestamp: Date.now(),
+            status: 'Active'
+        };
+
+        setEmergencyAlerts(prev => {
+            const updated = [newAlert, ...prev];
+            localStorage.setItem('cla-emergency-alerts', JSON.stringify(updated));
+            return updated;
+        });
+
+        // Also create a high-priority notification for admins (simulated by adding to general notifications for now, 
+        // in a real app this would be pushed to admin users)
+        const adminNotification: Notification = {
+            id: `notif-alert-${Date.now()}`,
+            userId: 'admin-1', // Assuming an admin ID or broadcast
+            type: 'system',
+            title: 'CRITICAL: Emergency Alert',
+            body: `${user.name} has triggered an emergency alert!`,
+            link: { page: 'overview' },
+            timestamp: Date.now(),
+            read: false,
+            severity: 'critical'
+        };
+        // For demo, we just push it to the notifications array, assuming the current user might see it if they are admin, 
+        // or it's just stored.
+        setNotifications(prev => [adminNotification, ...prev]);
+
+        setToast({ message: "Emergency Alert Sent! Help is on the way.", type: 'success' });
+    };
+
+    const resolveEmergencyAlert = (id: string, status: 'Resolved' | 'False Alarm') => {
+        setEmergencyAlerts(prev => {
+            const updated = prev.map(alert => alert.id === id ? { ...alert, status } : alert);
+            localStorage.setItem('cla-emergency-alerts', JSON.stringify(updated));
+            return updated;
+        });
+        setToast({ message: `Alert marked as ${status}`, type: 'success' });
+    };
 
     const addSupportMessage = (msg: Omit<SupportMessage, 'id' | 'timestamp' | 'status'>) => {
         const newMsg: SupportMessage = {
@@ -584,7 +642,9 @@ export const useAppLogic = () => {
         setSelectedCaseForUpload, handleUpdateProfile, handleChangePassword, updateUserVerification, handleUpdateAppointment, toggleTheme, setTheme,
         siteContent, updateSiteContent,
         chatTargetUserId, setChatTargetUserId,
-        supportMessages, addSupportMessage
+        supportMessages, addSupportMessage,
+        aiChatInitialPrompt, setAiChatInitialPrompt,
+        emergencyAlerts, sendEmergencyAlert, resolveEmergencyAlert
     };
 
 };

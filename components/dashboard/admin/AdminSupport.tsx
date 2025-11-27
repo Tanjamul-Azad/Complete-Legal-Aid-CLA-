@@ -5,7 +5,18 @@ import { MailIcon, ClockIcon } from '../../icons';
 export const AdminSupport: React.FC = () => {
     const context = useContext(AppContext);
     if (!context) return null;
-    const { supportMessages } = context;
+    const { supportMessages, setToast } = context;
+
+    const handleReply = (email: string) => {
+        // In a real app, this would open a modal or redirect to an email client
+        window.location.href = `mailto:${email}`;
+        setToast({ message: `Opened email client to reply to ${email}`, type: 'info' });
+    };
+
+    const handleMarkSpam = (id: string) => {
+        // In a real app, this would call an API
+        setToast({ message: "Message marked as spam.", type: 'success' });
+    };
 
     return (
         <div className="bg-cla-bg dark:bg-cla-surface-dark p-6 rounded-lg border border-cla-border dark:border-cla-border-dark animate-fade-in">
@@ -33,9 +44,9 @@ export const AdminSupport: React.FC = () => {
                             <div className="pl-10">
                                 <p className="text-sm text-cla-text dark:text-gray-300 whitespace-pre-wrap">{msg.message}</p>
                                 <div className="mt-3 flex gap-2">
-                                    <button className="text-xs font-bold text-cla-gold hover:underline">Reply via Email</button>
+                                    <button onClick={() => handleReply(msg.email)} className="text-xs font-bold text-cla-gold hover:underline">Reply via Email</button>
                                     <span className="text-gray-300 dark:text-gray-700">|</span>
-                                    <button className="text-xs font-bold text-red-500 hover:underline">Mark as Spam</button>
+                                    <button onClick={() => handleMarkSpam(msg.id)} className="text-xs font-bold text-red-500 hover:underline">Mark as Spam</button>
                                 </div>
                             </div>
                         </div>

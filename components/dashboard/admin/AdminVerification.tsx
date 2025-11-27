@@ -6,16 +6,16 @@ import { UserProfileDetailModal } from '../../admin/UserProfileDetailModal';
 export const AdminVerification: React.FC = () => {
     const context = useContext(AppContext);
     if (!context) return null;
-    const { users, updateUserVerification } = context;
+    const { users, updateUserVerification, setDashboardSubPage } = context;
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const pendingUsers = users.filter(u => u.verificationStatus === 'Pending');
 
     return (
-        <div className="bg-cla-bg dark:bg-cla-surface-dark p-6 rounded-lg border border-cla-border dark:border-cla-border-dark">
+        <div className="bg-cla-bg dark:bg-cla-surface-dark p-6 rounded-lg border border-cla-border dark:border-cla-border-dark animate-fade-in">
             <h2 className="text-2xl font-bold text-cla-text dark:text-cla-text-dark mb-6">User Verification Requests ({pendingUsers.length})</h2>
             {pendingUsers.length > 0 ? (
-                 <div className="overflow-x-auto">
+                <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left text-cla-text-muted dark:text-cla-text-muted-dark">
                         <thead className="text-xs text-cla-text dark:text-cla-text-dark uppercase bg-cla-surface dark:bg-cla-bg-dark">
                             <tr>
@@ -31,7 +31,7 @@ export const AdminVerification: React.FC = () => {
                                 <tr key={u.id} className="bg-cla-bg dark:bg-cla-surface-dark border-b border-cla-border dark:border-cla-border-dark">
                                     <th scope="row" className="px-6 py-4 font-medium text-cla-text dark:text-white whitespace-nowrap">
                                         <button onClick={() => setSelectedUser(u)} className="flex items-center space-x-3 text-left hover:bg-cla-surface dark:hover:bg-cla-bg-dark p-2 rounded-lg -m-2 transition-colors duration-200">
-                                            <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover"/>
+                                            <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
                                             <div>
                                                 <p className="hover:underline">{u.name}</p>
                                                 <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark">{u.email}</p>
@@ -59,7 +59,7 @@ export const AdminVerification: React.FC = () => {
             ) : (
                 <p>No pending verification requests.</p>
             )}
-             {selectedUser && (
+            {selectedUser && (
                 <UserProfileDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />
             )}
         </div>

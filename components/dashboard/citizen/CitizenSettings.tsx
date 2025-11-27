@@ -15,8 +15,8 @@ const TabButton: React.FC<{
     <button
         onClick={() => setActiveTab(id)}
         className={`flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors flex-shrink-0 ${activeTab === id
-                ? 'border-cla-gold text-cla-gold'
-                : 'border-transparent text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-cla-text-dark hover:border-gray-300 dark:hover:border-gray-700'
+            ? 'border-cla-gold text-cla-gold'
+            : 'border-transparent text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-cla-text-dark hover:border-gray-300 dark:hover:border-gray-700'
             }`}
     >
         <Icon className="w-5 h-5" />
@@ -67,7 +67,7 @@ const defaultNotificationSettings = {
 export const CitizenSettings: React.FC = () => {
     const context = useContext(AppContext);
     if (!context) return null;
-    const { user, handleUpdateProfile, handleChangePassword, setToast, setTheme } = context;
+    const { user, handleUpdateProfile, handleChangePassword, setToast, setTheme, cases, appointments, messages } = context;
 
     const [activeTab, setActiveTab] = useState('profile');
 
@@ -82,6 +82,7 @@ export const CitizenSettings: React.FC = () => {
     const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
     const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
     const [isPasswordSaving, setIsPasswordSaving] = useState(false);
+    const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
     const isPasswordDirty = useMemo(() => Object.values(passwordData).some(v => v !== ''), [passwordData]);
     const passwordStrength = useMemo(() => {
         const pass = passwordData.new;
@@ -173,6 +174,26 @@ export const CitizenSettings: React.FC = () => {
         }
     };
 
+    const handleDownloadData = () => {
+        const data = {
+            userProfile: user,
+            myCases: cases.filter(c => c.clientId === user.id),
+            myAppointments: appointments.filter(a => a.clientId === user.id),
+            myMessages: messages.filter(m => m.senderId === user.id || m.receiverId === user.id),
+            exportDate: new Date().toISOString()
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `cla-data-${user.id}-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setToast({ message: "Data export started.", type: 'success' });
+    };
+
     const renderProfileTab = () => (
         <form onSubmit={handleProfileSubmit}>
             <SectionCard title="Profile Picture" description="Update your photo. It will be visible to lawyers and on your profile.">
@@ -229,11 +250,63 @@ export const CitizenSettings: React.FC = () => {
                 </button>
             </div>
             <div className="mt-8 space-y-8">
+                <SectionCard title="Data Privacy" description="Manage your data and privacy settings.">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-cla-text dark:text-white">Download Your Data</p>
+                            <p className="text-sm text-cla-text-muted dark:text-cla-text-muted-dark">Get a copy of your personal data, cases, and history.</p>
+                        </div>
+                        <button type="button" onClick={handleDownloadData} className="px-4 py-2 text-sm font-semibold bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark rounded-lg hover:bg-cla-border dark:hover:bg-cla-border-dark transition-colors flex items-center gap-2">
+                            <span className="w-4 h-4">📄</span>
+                            Download JSON
+                        </button>
+                    </div>
+                </SectionCard>
                 <SectionCard title="Two-Factor Authentication" description="Add an extra layer of security to your account.">
-                    <button type="button" className="px-4 py-2 text-sm font-semibold bg-cla-surface dark:bg-cla-surface-dark border border-cla-border dark:border-cla-border-dark rounded-lg" disabled>Enable 2FA (Coming Soon)</button>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-cla-text dark:text-white">Two-Factor Authentication (2FA)</p>
+                            <p className="text-sm text-cla-text-muted dark:text-cla-text-muted-dark">Secure your account with 2FA.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setTwoFactorEnabled(!twoFactorEnabled);
+                                setToast({ message: `2FA ${!twoFactorEnabled ? 'enabled' : 'disabled'} successfully!`, type: 'success' });
+                            }}
+                            className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-colors ${twoFactorEnabled ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-cla-surface dark:bg-cla-surface-dark border-cla-border dark:border-cla-border-dark hover:bg-gray-100 dark:hover:bg-white/5'}`}
+                        >
+                            {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+                        </button>
+                    </div>
                 </SectionCard>
                 <SectionCard title="Active Sessions" description="This is a list of devices that have logged into your account.">
-                    <p className="text-sm text-cla-text-muted dark:text-cla-text-muted-dark">Feature coming soon.</p>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg border border-cla-border dark:border-cla-border-dark">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
+                                    <span className="text-xl">💻</span>
+                                </div>
+                                <div>
+                                    <p className="font-medium text-sm text-cla-text dark:text-white">Windows PC - Chrome</p>
+                                    <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark">Dhaka, Bangladesh • Active now</p>
+                                </div>
+                            </div>
+                            <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">Current</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg border border-cla-border dark:border-cla-border-dark">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
+                                    <span className="text-xl">📱</span>
+                                </div>
+                                <div>
+                                    <p className="font-medium text-sm text-cla-text dark:text-white">iPhone 13 - Safari</p>
+                                    <p className="text-xs text-cla-text-muted dark:text-cla-text-muted-dark">Dhaka, Bangladesh • 2 hours ago</p>
+                                </div>
+                            </div>
+                            <button className="text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">Revoke</button>
+                        </div>
+                    </div>
                 </SectionCard>
             </div>
         </form>

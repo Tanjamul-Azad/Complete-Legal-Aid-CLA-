@@ -3,13 +3,14 @@ import type { UserRole, DashboardSubPage } from '../../types';
 import { AppContext } from '../../context/AppContext';
 import {
     DashboardIcon, VaultIcon, SettingsIcon, VerificationIcon, SearchIcon,
-    BellIcon, RobotIcon, CalendarIcon, LogoutIcon, BriefcaseIcon, MessageIcon, UserGroupIcon, BanknotesIcon, WarningIcon
+    BellIcon, RobotIcon, CalendarIcon, LogoutIcon, BriefcaseIcon, MessageIcon, UserGroupIcon, BanknotesIcon, WarningIcon, ServerIcon
 } from '../icons';
 import { Breadcrumb, BreadcrumbItem } from '../ui/Breadcrumb';
 import { DashboardHeader } from './DashboardHeader';
 import { Logo } from '../Logo';
 import { SecureChatWidget } from './SecureChatWidget';
 import { NotificationsPanel } from './NotificationsPanel';
+import { EmergencyHelpModal } from '../EmergencyHelpModal';
 
 // Shared Pages
 import { DashboardOverview } from './DashboardOverview';
@@ -39,6 +40,11 @@ import { AdminVerification } from './admin/AdminVerification';
 import { AdminOverview } from './admin/AdminOverview';
 import { AdminContentManager } from './admin/AdminContentManager';
 import { AdminSupport } from './admin/AdminSupport';
+import { AdminAuditLogs } from './admin/AdminAuditLogs';
+import { AdminSettings } from './admin/AdminSettings';
+import { SystemLogs } from './admin/SystemLogs';
+import { AdminUsers } from './admin/AdminUsers';
+import { AdminCases } from './admin/AdminCases';
 
 interface NavItem {
     id: string;
@@ -113,6 +119,10 @@ export const DashboardPage: React.FC = () => {
             { id: 'content-management', label: 'Content Management', icon: BriefcaseIcon }, // Reusing BriefcaseIcon for now
             { id: 'support', label: 'Support Inbox', icon: MessageIcon },
             { id: 'settings', label: 'Settings', icon: SettingsIcon },
+            { id: 'admin-users', label: 'User Management', icon: UserGroupIcon },
+            { id: 'admin-cases', label: 'Case Management', icon: BriefcaseIcon },
+            { id: 'system-logs', label: 'System Logs', icon: ServerIcon },
+            { id: 'audit-logs', label: 'Audit Trail', icon: BriefcaseIcon }, // Using BriefcaseIcon as placeholder if needed, or maybe another one
         ];
 
         switch (role) {
@@ -179,7 +189,11 @@ export const DashboardPage: React.FC = () => {
                     case 'verification': return <AdminVerification />;
                     case 'content-management': return <AdminContentManager />;
                     case 'support': return <AdminSupport />;
-                    case 'settings': return <CitizenSettings />;
+                    case 'audit-logs': return <AdminAuditLogs />;
+                    case 'system-logs': return <SystemLogs />;
+                    case 'admin-users': return <AdminUsers />;
+                    case 'admin-cases': return <AdminCases />;
+                    case 'settings': return <AdminSettings />;
                     default: return <AdminOverview />;
                 }
         }
@@ -222,26 +236,22 @@ export const DashboardPage: React.FC = () => {
                                     setDashboardSubPage(item.id as DashboardSubPage);
                                 }
                             }}
-                            className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg w-full text-left transition-colors font-medium relative text-sm ${subPage === item.id ? 'text-cla-gold bg-cla-gold/10 dark:bg-cla-gold/15' : 'text-cla-text-muted dark:text-cla-text-muted-dark hover:bg-white/50 dark:hover:bg-white/5 hover:text-cla-text dark:hover:text-cla-text-dark'}`}
+                            className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg w-full text-left transition-all duration-200 font-medium relative text-sm 
+                                ${subPage === item.id
+                                    ? 'text-cla-gold bg-cla-gold/10 dark:bg-cla-gold/15 shadow-sm'
+                                    : 'text-cla-text-muted dark:text-cla-text-muted-dark hover:bg-cla-gold/5 dark:hover:bg-cla-gold/10 hover:text-cla-gold dark:hover:text-cla-gold'
+                                }`}
                         >
-                            {subPage === item.id && <span className="absolute left-0 top-2 bottom-2 w-1 bg-cla-gold rounded-r-full transition-all"></span>}
+                            {subPage === item.id && <span className="absolute left-0 top-2 bottom-2 w-1 bg-cla-gold rounded-r-full transition-all shadow-[0_0_10px_rgba(245,158,11,0.5)]"></span>}
                             <div className="flex items-center space-x-3 transition-transform duration-200 group-hover:translate-x-1">
-                                <item.icon className={`w-5 h-5 flex-shrink-0 ${item.id === 'ai-assistant' ? 'text-cla-gold' : ''}`} />
+                                <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${subPage === item.id ? 'text-cla-gold' : 'group-hover:text-cla-gold'}`} />
                                 <span>{item.label}</span>
                             </div>
                         </button>
                     ))}
                 </nav>
                 <div className="px-4 py-4 border-t border-cla-border dark:border-cla-border-dark mt-auto">
-                    <button
-                        onClick={handleLogout}
-                        className="group flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-colors w-full font-medium text-sm text-cla-text-muted dark:text-cla-text-muted-dark hover:bg-white/50 dark:hover:bg-white/5 hover:text-cla-text dark:hover:text-cla-text-dark"
-                    >
-                        <div className="flex items-center space-x-3 transition-transform duration-200 group-hover:translate-x-1">
-                            <LogoutIcon className="w-5 h-5 flex-shrink-0" />
-                            <span>Logout</span>
-                        </div>
-                    </button>
+                    {/* Logout button removed as per user request */}
                 </div>
             </aside>
 
@@ -261,6 +271,15 @@ export const DashboardPage: React.FC = () => {
                     </div>
                 </main>
             </div>
+            <EmergencyHelpModal
+                isOpen={context.isEmergencyHelpOpen}
+                onClose={() => context.setEmergencyHelpOpen(false)}
+                onReport={() => context.setEmergencyReportOpen(true)}
+                onFindLawyer={context.handleFindLawyerFromEmergency}
+                onLiveChat={context.handleLiveChatFromEmergency}
+                onMakeComplaint={context.handleMakeComplaint}
+                onSendAlert={context.sendEmergencyAlert}
+            />
             <SecureChatWidget
                 isOpen={isInboxOpen}
                 onClose={() => setInboxOpen(false)}

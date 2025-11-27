@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CloseIcon } from '../../icons';
+import { CloseIcon, BkashIcon, NagadIcon, BankIcon } from '../../icons';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -23,7 +23,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, inv
         alert(
             `Mock payment:\nInvoice: ${invoice.id}\nAmount: ${invoice.amount}\nMethod: ${selectedMethod.toUpperCase()}`
         );
-        
+
         // Future Backend Integration:
         // fetch('/api/payments/checkout', { ... })
         //   .then(r => r.json())
@@ -73,39 +73,39 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, inv
                             {/* bKash */}
                             <button
                                 onClick={() => setSelectedMethod('bkash')}
-                                className={`col-span-1 rounded-lg border px-2 py-3 text-center text-[11px] font-semibold transition-all flex flex-col items-center justify-center gap-1
-                                    ${selectedMethod === 'bkash' 
-                                        ? 'border-brand bg-brand-soft/60 dark:bg-brand-soft/10 text-slate-900 dark:text-white ring-1 ring-brand' 
-                                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-100 hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10'
+                                className={`col-span-1 rounded-lg border px-2 py-3 text-center text-[11px] font-semibold transition-all duration-300 flex flex-col items-center justify-center gap-2 group relative overflow-hidden
+                                    ${selectedMethod === 'bkash'
+                                        ? 'border-brand bg-brand-soft/60 dark:bg-brand/20 text-slate-900 dark:text-white ring-1 ring-brand shadow-gold-soft-sm'
+                                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-100 hover:border-brand dark:hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand/10 hover:shadow-gold-soft-sm'
                                     }`}
                             >
-                                <div className="text-lg">📱</div>
+                                <BkashIcon className="h-8 w-auto text-slate-900 dark:text-white transition-colors" />
                                 bKash
                             </button>
 
                             {/* Nagad */}
                             <button
                                 onClick={() => setSelectedMethod('nagad')}
-                                className={`col-span-1 rounded-lg border px-2 py-3 text-center text-[11px] font-semibold transition-all flex flex-col items-center justify-center gap-1
-                                    ${selectedMethod === 'nagad' 
-                                        ? 'border-brand bg-brand-soft/60 dark:bg-brand-soft/10 text-slate-900 dark:text-white ring-1 ring-brand' 
-                                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-100 hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10'
+                                className={`col-span-1 rounded-lg border px-2 py-3 text-center text-[11px] font-semibold transition-all duration-300 flex flex-col items-center justify-center gap-2 group relative overflow-hidden
+                                    ${selectedMethod === 'nagad'
+                                        ? 'border-brand bg-brand-soft/60 dark:bg-brand/20 text-slate-900 dark:text-white ring-1 ring-brand shadow-gold-soft-sm'
+                                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-100 hover:border-brand dark:hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand/10 hover:shadow-gold-soft-sm'
                                     }`}
                             >
-                                <div className="text-lg">💳</div>
+                                <NagadIcon className="h-8 w-auto transition-transform group-hover:scale-105" />
                                 Nagad
                             </button>
 
                             {/* Bank */}
                             <button
                                 onClick={() => setSelectedMethod('bank')}
-                                className={`col-span-1 rounded-lg border px-2 py-3 text-center text-[11px] font-semibold transition-all flex flex-col items-center justify-center gap-1
-                                    ${selectedMethod === 'bank' 
-                                        ? 'border-brand bg-brand-soft/60 dark:bg-brand-soft/10 text-slate-900 dark:text-white ring-1 ring-brand' 
-                                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-100 hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10'
+                                className={`col-span-1 rounded-lg border px-2 py-3 text-center text-[11px] font-semibold transition-all duration-300 flex flex-col items-center justify-center gap-2 group relative overflow-hidden
+                                    ${selectedMethod === 'bank'
+                                        ? 'border-brand bg-brand-soft/60 dark:bg-brand/20 text-slate-900 dark:text-white ring-1 ring-brand shadow-gold-soft-sm'
+                                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-100 hover:border-brand dark:hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand/10 hover:shadow-gold-soft-sm'
                                     }`}
                             >
-                                <div className="text-lg">🏦</div>
+                                <BankIcon className="h-8 w-8 text-slate-600 dark:text-slate-400 group-hover:text-brand dark:group-hover:text-brand transition-colors" />
                                 Bank
                             </button>
                         </div>

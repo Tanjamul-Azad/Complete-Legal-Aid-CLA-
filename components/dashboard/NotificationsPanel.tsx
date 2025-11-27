@@ -55,7 +55,7 @@ export const NotificationsPanel: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-transparent z-40" onClick={onClose}>
-            <div 
+            <div
                 className="absolute top-20 right-36 w-96 max-w-[calc(100vw-2rem)] bg-cla-surface dark:bg-[#111111] rounded-xl shadow-modal-light dark:shadow-modal-dark border border-cla-border dark:border-cla-border-dark flex flex-col animate-scale-in"
                 onClick={e => e.stopPropagation()}
                 style={{ transformOrigin: 'top right' }}
@@ -64,17 +64,17 @@ export const NotificationsPanel: React.FC<{
                     <h3 className="font-bold text-cla-text dark:text-white">Notifications</h3>
                     <button onClick={markAllAsRead} className="text-xs font-semibold text-cla-gold hover:underline">Mark all as read</button>
                 </header>
-                
+
                 <div className="flex-1 overflow-y-auto" style={{ maxHeight: '380px' }}>
-                     {sortedNotifications.length > 0 ? (
+                    {sortedNotifications.length > 0 ? (
                         <div className="divide-y divide-cla-border dark:divide-[rgba(255,255,255,0.07)]">
                             {sortedNotifications.map((notif, index) => (
-                                <button 
+                                <button
                                     key={notif.id}
                                     onClick={() => handleClick(notif)}
                                     disabled={!notif.link}
                                     className={`w-full text-left p-4 transition-colors duration-150 ${!notif.read ? 'bg-cla-gold/5 dark:bg-cla-gold/15' : ''} ${notif.link ? 'hover:bg-cla-gold/10 dark:hover:bg-cla-gold/20' : 'cursor-default'}`}
-                                    style={{ animation: `fadeInUp 0.3s ease-out ${index * 40}ms forwards`, opacity: 0}}
+                                    style={{ animation: `fadeInUp 0.3s ease-out ${index * 40}ms forwards`, opacity: 0 }}
                                 >
                                     <div className="flex items-start gap-3">
                                         <div className={`mt-0.5 flex-shrink-0 ${notif.read ? 'text-cla-text-muted dark:text-cla-text-muted-dark' : 'text-cla-gold'}`}>
