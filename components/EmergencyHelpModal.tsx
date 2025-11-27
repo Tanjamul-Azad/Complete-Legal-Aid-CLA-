@@ -293,6 +293,11 @@ export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({ isOpen, 
             leafletMapRef.current = map;
             userMarkerRef.current = marker;
             placesLayerRef.current = L.layerGroup().addTo(map);
+
+            // Fix: Ensure map renders correctly after modal animation
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
         } else {
             // Map exists, just update view smoothly
             leafletMapRef.current.flyTo([lat, lng], 14, { duration: 1.5 });
@@ -300,6 +305,11 @@ export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({ isOpen, 
                 userMarkerRef.current.setLatLng([lat, lng]);
             }
             setIsUserCentered(true);
+
+            // Fix: Ensure map size is correct on update too
+            setTimeout(() => {
+                leafletMapRef.current?.invalidateSize();
+            }, 100);
         }
 
         // Update Places Markers
@@ -376,7 +386,7 @@ export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({ isOpen, 
                 console.warn("Location access denied/failed:", error.message);
                 fallbackToDefault();
             },
-            { timeout: 10000, enableHighAccuracy: true }
+            { timeout: 20000, enableHighAccuracy: true, maximumAge: 0 }
         );
     };
 
