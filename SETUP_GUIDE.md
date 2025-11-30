@@ -1132,3 +1132,145 @@ If you encounter issues:
 **Setup completed successfully! 🎉**
 
 Your Complete Legal Aid platform is now ready for development and testing.
+
+---
+
+##  Sample User Credentials (Bengali Data)
+
+The system includes sample users with Bengali names for testing purposes. Use these credentials to test different user roles:
+
+### Admin Account
+- **Email:** ahbab.md@gmail.com
+- **Password:** ahbab2018
+- **Role:** Admin (Superuser)
+
+---
+
+###  Sample Lawyers
+
+#### 1. Advocate Mahmudur Rahman Chowdhury (?????? ????? ???? ???)
+- **Email:** adv.chowdhury@example.com
+- **Phone:** +8801711111111
+- **Password:** Lawyer@123
+- **Bar Council No:** DHK/2015/12345
+- **Specialization:** Family Law, Civil Law
+- **Chamber:** Supreme Court Bar Association, Dhaka
+- **Online Fee:** 1,500 | **Offline Fee:** 3,000
+
+#### 2. Advocate Nasrin Akter (?????? ???? ????)
+- **Email:** adv.akter@example.com
+- **Phone:** +8801811111112
+- **Password:** Lawyer@123
+- **Bar Council No:** CTG/2017/23456
+- **Specialization:** Women Rights, Family Law
+- **Chamber:** Chittagong Bar Association, Chittagong
+- **Online Fee:** 1,200 | **Offline Fee:** 2,500
+
+#### 3. Advocate Abdul Karim Sheikh (?????? ???? ??? ??)
+- **Email:** adv.karim@example.com
+- **Phone:** +8801911111113
+- **Password:** Lawyer@123
+- **Bar Council No:** RAJ/2012/34567
+- **Specialization:** Criminal Law
+- **Chamber:** Rajshahi Judge Court, Rajshahi
+- **Online Fee:** 1,800 | **Offline Fee:** 3,500
+
+#### 4. Advocate Farzana Islam (?????? ???? ????)
+- **Email:** adv.islam@example.com
+- **Phone:** +8801611111114
+- **Password:** Lawyer@123
+- **Bar Council No:** KHL/2016/45678
+- **Specialization:** Property Law, Civil Law
+- **Chamber:** Khulna District Court, Khulna
+- **Online Fee:** 1,000 | **Offline Fee:** 2,000
+
+#### 5. Advocate Mizanur Rahman (?????? ???? ????)
+- **Email:** adv.rahman@example.com
+- **Phone:** +8801511111115
+- **Password:** Lawyer@123
+- **Bar Council No:** SYL/2014/56789
+- **Specialization:** Labor Law, Civil Law
+- **Chamber:** Sylhet Bar Association, Sylhet
+- **Online Fee:** 1,300 | **Offline Fee:** 2,800
+
+#### 6. Advocate Tahmina Begum (?????? ???? ???)
+- **Email:** adv.begum@example.com
+- **Phone:** +8801711111116
+- **Password:** Lawyer@123
+- **Bar Council No:** DHK/2018/67890
+- **Specialization:** Family Law, Women Rights
+- **Chamber:** Dhaka Chief Metropolitan Court, Dhaka
+- **Online Fee:** 900 | **Offline Fee:** 1,800
+
+---
+
+###  Sample Citizens
+
+#### 1. Abdur Rahman (???? ????)
+- **Email:** rahman.citizen@example.com
+- **Phone:** +8801712345671
+- **Password:** Citizen@123
+- **Location:** Dhaka, Dhanmondi
+- **NID:** 1234567890
+
+#### 2. Fatema Sultana (??? ????)
+- **Email:** sultana.citizen@example.com
+- **Phone:** +8801812345672
+- **Password:** Citizen@123
+- **Location:** Chittagong, Nasirabad
+- **NID:** 1234567891
+
+#### 3. Md. Kamal Islam (?. ??? ????)
+- **Email:** islam.citizen@example.com
+- **Phone:** +8801912345673
+- **Password:** Citizen@123
+- **Location:** Rajshahi, Shaheb Bazar
+- **NID:** 1234567892
+
+#### 4. Ayesha Begum (??? ???)
+- **Email:** begum.citizen@example.com
+- **Phone:** +8801612345674
+- **Password:** Citizen@123
+- **Location:** Khulna, Royal Para
+- **NID:** 1234567893
+
+#### 5. Imran Hossain (???? ???)
+- **Email:** hossain.citizen@example.com
+- **Phone:** +8801512345675
+- **Password:** Citizen@123
+- **Location:** Sylhet, Zindabazar
+- **NID:** 1234567894
+
+---
+
+###  How to Add Sample Data
+
+If the sample data hasn't been loaded yet, run this command:
+
+**On Windows (PowerShell):**
+```powershell
+cd Backend
+.\venv\Scripts\activate
+python add_sample_data.py
+```
+
+**On macOS/Linux:**
+```bash
+cd Backend
+source venv/bin/activate
+python add_sample_data.py
+```
+
+This will create:
+-  6 verified lawyer accounts with Bengali names
+-  5 citizen accounts with Bengali names
+-  Legal specializations (Family Law, Criminal Law, Civil Law, etc.)
+-  All accounts are pre-verified and ready to use
+
+The credentials are also saved to `Backend/sample_credentials.txt` for your reference.
+
+---
+
+** Your Complete Legal Aid platform is now fully set up with Bengali sample data!**
+
+You can now test the application with realistic Bengali user data.

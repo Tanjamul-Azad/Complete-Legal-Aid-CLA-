@@ -126,8 +126,8 @@ def login(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Authenticate user
-    user = authenticate(email=email, password=password)
+    # Authenticate user - pass request and use email parameter
+    user = authenticate(request=request, email=email, password=password)
     
     if user is None:
         return Response(
