@@ -88,19 +88,22 @@ This system bridges **citizens → lawyers → NGOs → admins** into one truste
 
 ```bash
 Complete-Legal-Aid/
-├── components/           # UI Components (Modals, Dashboard, etc.)
-├── context/              # React Context (Global State)
-├── hooks/                # Custom Hooks (useAppLogic, etc.)
-├── services/             # API & Mock Services
-│   ├── mock/             # Mock Database & Data
+├── frontend/             # React Application
+│   ├── src/
+│   │   ├── components/   # UI Components
+│   │   ├── context/      # Global State
+│   │   ├── hooks/        # Custom Hooks
+│   │   ├── pages/        # Page Components
+│   │   ├── services/     # API Services
+│   │   ├── utils/        # Utilities
+│   │   └── ...
+│   ├── public/           # Static Assets
 │   └── ...
-├── legal/                # Legal Content (Privacy, Terms)
-├── utils/                # Utility Functions
-├── App.tsx               # Main Application Component
-├── constants.ts          # App Constants
-├── types.ts              # TypeScript Definitions
-├── index.html            # Entry HTML
-└── vite.config.ts        # Vite Configuration
+├── backend/              # Django Backend (Ready for development)
+├── docs/                 # Documentation & PDFs
+├── infrastructure/       # Deployment Configs
+├── .env                  # Environment Variables
+└── package.json          # Root scripts
 ```
 ## 🤖 AI Legal Assistant
 
@@ -199,7 +202,9 @@ VITE_GEMINI_API_KEY=your_api_key_here
 ```bash
 npm run dev
 ```
-The application will start at `http://localhost:5173` (or the port shown in your terminal).
+The application will start at `https://localhost:3000/Complete-Legal-Aid/`.
+
+> **Note:** The `npm run dev` command in the root directory automatically proxies to the `frontend` folder. You can also run it directly from `frontend/`.
 
 ### **6️⃣ Build for Production**
 To create an optimized production build:
