@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
-      https: false  // Disable HTTPS for local development to avoid mixed content errors
+
     },
     plugins: [react()],  // Remove basicSsl() plugin
     base: mode === 'production' ? '/Complete-Legal-Aid/' : '/',

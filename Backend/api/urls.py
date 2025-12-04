@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .dashboard_views import LawyerDashboardView
 from .auth_views import (
     register, login, get_profile, update_profile, change_password,
     verify_email, resend_verification_email, request_password_reset, reset_password_confirm
@@ -55,6 +56,9 @@ urlpatterns = [
     path('auth/password/reset/', request_password_reset, name='request_password_reset'),
     path('auth/password/reset/confirm/', reset_password_confirm, name='reset_password_confirm'),
     
+    # Dashboard
+    path('dashboard/lawyer/', LawyerDashboardView.as_view(), name='lawyer-dashboard'),
+
     # ViewSet routes
     path('', include(router.urls)),
 ]

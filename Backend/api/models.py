@@ -7,6 +7,11 @@ class UserManager(BaseUserManager):
     def create_user(self, email, phone_number, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
+        if not phone_number:
+            raise ValueError('The phone number field must be set')
+        # Default to citizen if no explicit role is provided
+        extra_fields.setdefault('role', 'CITIZEN')
+
         email = self.normalize_email(email)
         user = self.model(email=email, phone_number=phone_number, **extra_fields)
         user.set_password(password)
@@ -445,3 +450,5 @@ class SystemSetting(models.Model):
 
     class Meta:
         db_table = 'system_settings'
+
+

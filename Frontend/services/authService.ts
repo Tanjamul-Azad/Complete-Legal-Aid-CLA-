@@ -99,10 +99,19 @@ const persistSession = (user: User, access: string, refresh: string) => {
 
 const login = async (identifier: string, password: string): Promise<User | null> => {
   try {
-    const response = await apiClient.post<LoginResponse>('/auth/login/', {
-      email: identifier,
+    const trimmedIdentifier = identifier.trim();
+    const loginPayload: Record<string, string> = {
       password,
-    });
+      identifier: trimmedIdentifier,
+    };
+
+    if (trimmedIdentifier.includes('@')) {
+      loginPayload.email = trimmedIdentifier;
+    } else {
+      loginPayload.phone_number = trimmedIdentifier;
+    }
+
+    const response = await apiClient.post<LoginResponse>('/auth/login/', loginPayload);
 
     const normalizedUser = normalizeUser(response.data.user);
     persistSession(normalizedUser, response.data.access, response.data.refresh);

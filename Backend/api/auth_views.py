@@ -35,32 +35,38 @@ def register(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Check if user already exists
-    if User.objects.filter(email=data['email']).exists():
-        print(f"User with email {data['email']} already exists")  # Debug logging
+    # Normalize email and phone number to match UserManager's create_user normalization
+    from django.contrib.auth.models import BaseUserManager
+    normalized_email = BaseUserManager.normalize_email(data['email'].strip())
+    normalized_phone = data['phone_number'].strip()
+    
+    # Check if user already exists with normalized email
+    if User.objects.filter(email__iexact=normalized_email).exists():
+        print(f"User with email {normalized_email} already exists")  # Debug logging
         return Response(
             {'error': 'An account with this email already exists.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     # Check if phone number already exists
-    if User.objects.filter(phone_number=data['phone_number']).exists():
-        print(f"User with phone {data['phone_number']} already exists")  # Debug logging
+    if User.objects.filter(phone_number=normalized_phone).exists():
+        print(f"User with phone {normalized_phone} already exists")  # Debug logging
         return Response(
             {'error': 'An account with this phone number already exists.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     try:
-        # Create user
+        # Create user with normalized values
         user = User.objects.create_user(
-            email=data['email'],
-            phone_number=data['phone_number'],
-            password=data['password']
+            email=normalized_email,
+            phone_number=normalized_phone,
+            password=data['password'],
+            role=role,
+            language_preference=data.get('language', 'EN'),
+            is_active=True  # Allow login immediately (email verification flow TBD)
         )
-        user.role = role
-        user.language_preference = data.get('language', 'EN')
-        user.is_active = True  # Auto-activate for now (can add email verification later)
+        user.is_verified = role == 'CITIZEN'  # lawyers stay pending until reviewed
         user.save()
 
         profile_photo_path = save_uploaded_file(profile_photo_file, f'profiles/{role.lower()}') if profile_photo_file else None
@@ -76,7 +82,7 @@ def register(request):
                 identity_document_url=identity_doc_path,
             )
         elif role == 'LAWYER':
-            LawyerProfile.objects.create(
+            lawyer_profile = LawyerProfile.objects.create(
                 user=user,
                 full_name_en=data['name'],
                 bar_council_number=data.get('lawyerId', f'TEMP-{user.user_id}'),
@@ -87,6 +93,30 @@ def register(request):
                 verification_document_url=verification_doc_path,
                 identity_document_url=identity_doc_path,
             )
+            
+            # Link specializations to lawyer profile
+            from .models import LegalSpecialization, LawyerSpecializationMap
+            spec_data = data.get('specializations', '')
+            
+            # Handle both comma-separated string and list formats
+            if isinstance(spec_data, str):
+                spec_list = [s.strip() for s in spec_data.split(',') if s.strip()]
+            else:
+                spec_list = spec_data or []
+            
+            # Create LawyerSpecializationMap entries for each valid specialization
+            for spec_slug in spec_list:
+                try:
+                    specialization = LegalSpecialization.objects.get(slug=spec_slug)
+                    LawyerSpecializationMap.objects.create(
+                        lawyer=lawyer_profile,
+                        specialization=specialization
+                    )
+                    print(f"Linked specialization: {specialization.name_en} to lawyer: {lawyer_profile.full_name_en}")
+                except LegalSpecialization.DoesNotExist:
+                    print(f"Warning: Invalid specialization slug '{spec_slug}' - skipping")
+                except Exception as e:
+                    print(f"Error linking specialization '{spec_slug}': {str(e)}")
         
         # Generate tokens
         refresh = RefreshToken.for_user(user)
@@ -117,14 +147,28 @@ def login(request):
     """
     Login user and return JWT tokens
     """
-    email = request.data.get('email')
+    identifier = request.data.get('identifier') or request.data.get('email') or request.data.get('phone_number')
     password = request.data.get('password')
-    
-    if not email or not password:
+
+    if not identifier or not password:
         return Response(
-            {'error': 'Email and password are required'},
+            {'error': 'Email/phone and password are required'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    identifier = identifier.strip()
+
+    # Allow phone based login by resolving to the user's email
+    email = identifier
+    if '@' not in identifier:
+        try:
+            user_obj = User.objects.get(phone_number=identifier)
+            email = user_obj.email
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Invalid credentials'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
     
     # Authenticate user - pass request and use email parameter
     user = authenticate(request=request, email=email, password=password)
