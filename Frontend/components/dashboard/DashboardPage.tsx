@@ -96,7 +96,7 @@ export const DashboardPage: React.FC = () => {
             { id: 'cases', label: 'My Cases', icon: BriefcaseIcon },
             { id: 'vault', label: 'Evidence Vault', icon: VaultIcon },
             { id: 'appointments', label: 'Appointments', icon: CalendarIcon },
-            { id: 'messages', label: 'Messages', icon: MessageIcon },
+
             { id: 'billing', label: 'Payments', icon: BanknotesIcon },
             { id: 'notifications', label: 'Notifications', icon: BellIcon },
             { id: 'settings', label: 'Settings', icon: SettingsIcon },
@@ -109,7 +109,7 @@ export const DashboardPage: React.FC = () => {
             { id: 'clients', label: 'Clients', icon: UserGroupIcon },
             { id: 'vault', label: 'Evidence Vault', icon: VaultIcon },
             { id: 'billing', label: 'Payments', icon: BanknotesIcon },
-            { id: 'messages', label: 'Messages', icon: MessageIcon },
+
             { id: 'settings', label: 'Profile Settings', icon: SettingsIcon },
             { id: 'ai-assistant', label: 'AI Assistant', icon: RobotIcon, action: () => setChatOpen(true) },
         ];
@@ -167,7 +167,7 @@ export const DashboardPage: React.FC = () => {
                     case 'notifications': return <CitizenNotifications />;
                     case 'settings': return <CitizenSettings />;
                     case 'billing': return <CitizenBilling />;
-                    case 'messages': return <CitizenMessages />;
+
                     default: return <DashboardOverview />;
                 }
             case 'lawyer':
@@ -182,7 +182,7 @@ export const DashboardPage: React.FC = () => {
                     case 'vault': return <LawyerVault />;
                     case 'notifications': return <LawyerNotifications />;
                     case 'settings': return <LawyerSettings />;
-                    case 'messages': return <LawyerMessages />;
+
                     default: return <DashboardOverview />;
                 }
             case 'admin':

@@ -112,10 +112,10 @@ class Command(BaseCommand):
             user = User.objects.create_user(
                 email=email,
                 phone_number=f"+88017{random.randint(10000000, 99999999)}",
-                password="admin123"  # Same password as user mentioned
+                password="admin123",  # Same password as user mentioned
+                role='LAWYER',
+                is_active=True
             )
-            user.role = 'LAWYER'
-            user.is_active = True
             user.is_verified = True
             user.language_preference = 'EN'
             user.save()

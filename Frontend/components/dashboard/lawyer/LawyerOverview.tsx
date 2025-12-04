@@ -1,5 +1,6 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo, useEffect } from 'react';
 import { AppContext } from '../../../context/AppContext';
+import { dashboardService, type DashboardData } from '../../../services/dashboardService';
 import {
     BriefcaseIcon, CalendarIcon, MessageIcon, DocumentCloudIcon, ClockIcon,
     ClipboardDocumentCheckIcon, BanknotesIcon, GavelIcon, SparklesIcon, BookOpenIcon, ChevronRightIcon, CloseIcon
@@ -186,6 +187,15 @@ export const LawyerOverview: React.FC = () => {
     const [scheduleTab, setScheduleTab] = useState('Week');
     const [isReportOpen, setIsReportOpen] = useState(false);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+
+    useEffect(() => {
+        const loadData = async () => {
+            const data = await dashboardService.getLawyerDashboardStats();
+            if (data) setDashboardData(data);
+        };
+        loadData();
+    }, []);
 
     // Task State (Initialize with some mock manual tasks)
     const [manualTasks, setManualTasks] = useState<ManualTask[]>([
@@ -196,6 +206,7 @@ export const LawyerOverview: React.FC = () => {
     // Safely access context values
     const user = context?.user;
     const setDashboardSubPage = context?.setDashboardSubPage || (() => { });
+    const setSelectedCaseId = context?.setSelectedCaseId || (() => { });
     const appointments = context?.appointments || [];
 
     // Calculate total pending tasks (Manual + Automated from Future Appointments)
@@ -228,15 +239,27 @@ export const LawyerOverview: React.FC = () => {
 
     if (!context || !user) return null;
 
-    const caseStages = [
-        { name: 'Intake', count: 2, color: 'bg-sky-400' },
-        { name: 'Review', count: 5, color: 'bg-teal-400' },
-        { name: 'Drafting', count: 3, color: 'bg-amber-400' },
-        { name: 'Filed', count: 4, color: 'bg-orange-500' },
-        { name: 'Hearing', count: 2, color: 'bg-purple-400' },
-        { name: 'Closed', count: 8, color: 'bg-slate-500' },
-    ];
-    const maxCount = Math.max(...caseStages.map(s => s.count));
+    const caseStages = useMemo(() => {
+        if (!dashboardData) return [
+            { name: 'Intake', count: 0, color: 'bg-sky-400' },
+            { name: 'Review', count: 0, color: 'bg-teal-400' },
+            { name: 'Drafting', count: 0, color: 'bg-amber-400' },
+            { name: 'Filed', count: 0, color: 'bg-orange-500' },
+            { name: 'Hearing', count: 0, color: 'bg-purple-400' },
+            { name: 'Closed', count: 0, color: 'bg-slate-500' },
+        ];
+        const overview = dashboardData.case_overview;
+        return [
+            { name: 'Intake', count: overview['Intake'] || 0, color: 'bg-sky-400' },
+            { name: 'Review', count: overview['Review'] || 0, color: 'bg-teal-400' },
+            { name: 'Drafting', count: overview['Drafting'] || 0, color: 'bg-amber-400' },
+            { name: 'Filed', count: overview['Filed'] || 0, color: 'bg-orange-500' },
+            { name: 'Hearing', count: overview['Hearing'] || 0, color: 'bg-purple-400' },
+            { name: 'Closed', count: overview['Closed'] || 0, color: 'bg-slate-500' },
+        ];
+    }, [dashboardData]);
+
+    const maxCount = Math.max(...caseStages.map(s => s.count), 1);
 
     return (
         <div className="space-y-8 animate-fade-in">
@@ -269,22 +292,22 @@ export const LawyerOverview: React.FC = () => {
             {/* Row 1: Metric Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                    <StatCard icon={<BriefcaseIcon className="w-5 h-5" />} value="12" label="Active Cases" subtext="3 in Hearing this week" onClick={() => setDashboardSubPage('cases')} />
+                    <StatCard icon={<BriefcaseIcon className="w-5 h-5" />} value={dashboardData ? dashboardData.stats.active_cases.toString() : "0"} label="Active Cases" subtext="3 in Hearing this week" onClick={() => setDashboardSubPage('cases')} />
                 </div>
                 <div className="animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-                    <StatCard icon={<GavelIcon className="w-5 h-5" />} value="4" label="Hearings" subtext="Next: Thu 10:30 AM" onClick={() => setDashboardSubPage('appointments')} />
+                    <StatCard icon={<GavelIcon className="w-5 h-5" />} value={dashboardData ? dashboardData.stats.hearings_this_week.toString() : "0"} label="Hearings" subtext="Next: Thu 10:30 AM" onClick={() => setDashboardSubPage('appointments')} />
                 </div>
                 <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                     <StatCard
                         icon={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
-                        value={pendingTaskCount.toString()}
+                        value={dashboardData ? dashboardData.stats.pending_tasks.toString() : "0"}
                         label="Tasks"
                         subtext={`${dueTodayCount} due today`}
                         onClick={() => setIsTaskModalOpen(true)}
                     />
                 </div>
                 <div className="animate-fade-in-up" style={{ animationDelay: '250ms' }}>
-                    <StatCard icon={<BanknotesIcon className="w-5 h-5" />} value="12.5h" label="Billable Hours" subtext="Tracked this week" onClick={() => setDashboardSubPage('billing')} />
+                    <StatCard icon={<BanknotesIcon className="w-5 h-5" />} value={dashboardData ? dashboardData.stats.billable_hours.toString() + "h" : "0h"} label="Billable Hours" subtext="Tracked this week" onClick={() => setDashboardSubPage('billing')} />
                 </div>
             </div>
 
@@ -327,7 +350,7 @@ export const LawyerOverview: React.FC = () => {
                                     <div className="flex-1 h-3 bg-cla-bg dark:bg-cla-bg-dark rounded-full overflow-hidden relative z-10">
                                         <div
                                             className={`h-full rounded-full ${stage.color}`}
-                                            style={{ width: `${(stage.count / maxCount) * 100}%` }}
+                                            style={{ width: `${maxCount > 0 ? (stage.count / maxCount) * 100 : 0}%` }}
                                         />
                                     </div>
                                     <div className="w-6 text-right text-cla-text dark:text-white font-bold">{stage.count}</div>
@@ -342,51 +365,36 @@ export const LawyerOverview: React.FC = () => {
                                 Cases Needing Attention
                             </h3>
                             <div className="space-y-2 relative z-20">
-                                {/* Alert 1: Hearing */}
-                                <button
-                                    onClick={() => setDashboardSubPage('cases')}
-                                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-left hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10 transition-all duration-150 group"
-                                >
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-slate-800 dark:text-slate-50">
-                                            Land Dispute – Savar (c#21)
-                                        </span>
-                                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                                            Next hearing approaching. Review documents and prepare notes.
-                                        </span>
+                                {dashboardData && dashboardData.cases_needing_attention.length > 0 ? (
+                                    dashboardData.cases_needing_attention.map((c: any) => (
+                                        <button
+                                            key={c.id}
+                                            onClick={() => { setSelectedCaseId(c.id); setDashboardSubPage('cases'); }}
+                                            className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-left hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10 transition-all duration-150 group"
+                                        >
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-slate-800 dark:text-slate-50">
+                                                    {c.title} (c#{c.id})
+                                                </span>
+                                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                                    {c.status} • {c.case_type}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap">
+                                                    Needs Attention
+                                                </span>
+                                                <span className="text-slate-400 dark:text-slate-500 text-lg group-hover:text-brand transition-colors">
+                                                    ›
+                                                </span>
+                                            </div>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
+                                        No cases needing immediate attention.
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="inline-flex items-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap">
-                                            Hearing tomorrow
-                                        </span>
-                                        <span className="text-slate-400 dark:text-slate-500 text-lg group-hover:text-brand transition-colors">
-                                            ›
-                                        </span>
-                                    </div>
-                                </button>
-
-                                {/* Alert 2: Deadline */}
-                                <button
-                                    onClick={() => setDashboardSubPage('cases')}
-                                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-left hover:border-brand hover:bg-brand-soft/60 dark:hover:bg-brand-soft/10 transition-all duration-150 group"
-                                >
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-slate-800 dark:text-slate-50">
-                                            Contract Review (c#34)
-                                        </span>
-                                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                                            Client waiting for initial draft. Review partnership clauses.
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap">
-                                            Draft due in 2 days
-                                        </span>
-                                        <span className="text-slate-400 dark:text-slate-500 text-lg group-hover:text-brand transition-colors">
-                                            ›
-                                        </span>
-                                    </div>
-                                </button>
+                                )}
                             </div>
                         </div>
                     </DashboardCard>
@@ -462,9 +470,21 @@ export const LawyerOverview: React.FC = () => {
                     <DashboardCard className="p-8 h-full">
                         <h3 className="text-lg font-bold text-cla-text dark:text-white mb-6">Recent Activity</h3>
                         <div className="space-y-6 pl-2 relative z-20">
-                            <ActivityItem icon={<MessageIcon className="w-4 h-4" />} text={<>New message from <strong className="text-cla-text dark:text-white">John Doe</strong> in Case c#21</>} time="5 min ago" />
-                            <ActivityItem icon={<DocumentCloudIcon className="w-4 h-4" />} text={<><strong className="text-cla-text dark:text-white">Partnership_Agreement_Final.pdf</strong> uploaded by client in Case c#34</>} time="20 min ago" />
-                            <ActivityItem icon={<CalendarIcon className="w-4 h-4" />} text={<>Appointment booked by <strong className="text-cla-text dark:text-white">Jane Smith</strong> for tomorrow</>} time="1 hour ago" isLast={true} />
+                            {dashboardData && dashboardData.recent_activity.length > 0 ? (
+                                dashboardData.recent_activity.map((activity: any, index: number) => (
+                                    <ActivityItem
+                                        key={activity.id}
+                                        icon={<MessageIcon className="w-4 h-4" />} // Default icon for now
+                                        text={<><strong className="text-cla-text dark:text-white">{activity.user}</strong> {activity.activity_type} in Case c#{activity.case}</>}
+                                        time={new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        isLast={index === dashboardData.recent_activity.length - 1}
+                                    />
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
+                                    No recent activity.
+                                </div>
+                            )}
                         </div>
                     </DashboardCard>
                 </div>

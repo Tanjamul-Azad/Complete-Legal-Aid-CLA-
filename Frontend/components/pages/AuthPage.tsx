@@ -8,9 +8,9 @@ import { SignupForm } from './SignupForm';
 import { AdminLoginForm } from './AdminLoginForm';
 
 
-export const AuthPage: React.FC<{ 
-    onLogin: (emailOrPhone: string, pass: string, rememberMe: boolean, expectedRole: UserRole) => Promise<User | 'PENDING_EMAIL_VERIFICATION' | 'ROLE_MISMATCH' | null>; 
-    onSignup: (user: Omit<User, 'id' | 'avatar'>) => Promise<User | null>;
+export const AuthPage: React.FC<{
+    onLogin: (emailOrPhone: string, pass: string, rememberMe: boolean, expectedRole: UserRole) => Promise<User | 'PENDING_EMAIL_VERIFICATION' | 'ROLE_MISMATCH' | null>;
+    onSignup: (user: Omit<User, 'id' | 'avatar'>) => Promise<{ success: boolean; user?: User; error?: string }>;
     onSimulateGoogleLogin: (email: string) => void;
     openGoogleAuth: () => void;
     defaultMode: 'login' | 'signup' | 'admin-login';
@@ -21,11 +21,11 @@ export const AuthPage: React.FC<{
     onLogout: () => void;
 }> = ({ onLogin, onSignup, onSimulateGoogleLogin, openGoogleAuth, defaultMode, initialSignupRole, onForgotPassword, setCurrentPage, showLegalPage, onLogout }) => {
     const [view, setView] = useState<'login' | 'signup' | 'admin-login'>('login');
-    
+
     // We maintain separate role states to remember the user's choice when switching tabs
     const [signupRole, setSignupRole] = useState<UserRole>('citizen');
     const [loginRole, setLoginRole] = useState<UserRole>('citizen');
-    
+
     // Form state
     const [formData, setFormData] = useState({
         name: '', email: '', phone: '', password: '', confirmPassword: '',
@@ -52,14 +52,14 @@ export const AuthPage: React.FC<{
             // Also sync login role so if they switch to login, it stays on the same persona
             setLoginRole(initialSignupRole === 'lawyer' ? 'lawyer' : 'citizen');
         } else {
-             setView('login');
-             // Sync login role based on intent (e.g. "Join as Lawyer" -> goes to Login -> Lawyer Tab)
-             const role = initialSignupRole === 'lawyer' ? 'lawyer' : 'citizen';
-             setLoginRole(role);
-             setSignupRole(role);
+            setView('login');
+            // Sync login role based on intent (e.g. "Join as Lawyer" -> goes to Login -> Lawyer Tab)
+            const role = initialSignupRole === 'lawyer' ? 'lawyer' : 'citizen';
+            setLoginRole(role);
+            setSignupRole(role);
         }
     }, [defaultMode, initialSignupRole]);
-    
+
     const validateField = (name: string, value: any, currentFormData = formData) => {
         let error = '';
 
@@ -88,9 +88,6 @@ export const AuthPage: React.FC<{
             case 'specializations':
                 if (signupRole === 'lawyer' && !value) error = 'At least one specialization is required.';
                 break;
-            case 'doc':
-                if (signupRole === 'lawyer' && !value) error = 'Verification document is required.';
-                break;
             case 'lawyerTerms':
                 if (signupRole === 'lawyer' && !value) error = 'You must agree to the professional conduct policy.';
                 break;
@@ -111,7 +108,7 @@ export const AuthPage: React.FC<{
         const isCheckbox = type === 'checkbox';
         // @ts-ignore
         const val = isCheckbox ? e.target.checked : value;
-        
+
         const newFormData = { ...formData, [name]: val };
         setFormData(newFormData);
 
@@ -123,18 +120,18 @@ export const AuthPage: React.FC<{
             validateField('confirmPassword', newFormData.confirmPassword, newFormData);
         }
     };
-    
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
         let error = '';
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                 error = 'File size must be less than 5MB';
+                error = 'File size must be less than 5MB';
             } else if (!['application/pdf', 'image/jpeg'].includes(file.type)) {
-                 error = 'Only PDF and JPG files are allowed';
+                error = 'Only PDF and JPG files are allowed';
             }
         }
-        setErrors(prev => ({...prev, doc: error}));
+        setErrors(prev => ({ ...prev, doc: error }));
         setFormData(prev => ({ ...prev, doc: error ? null : file }));
     }
 
@@ -142,9 +139,9 @@ export const AuthPage: React.FC<{
         const fieldsToValidate = isSignup
             ? (signupRole === 'citizen'
                 ? ['name', 'email', 'phone', 'password', 'confirmPassword', 'terms']
-                : ['name', 'email', 'phone', 'password', 'confirmPassword', 'terms', 'lawyerId', 'specializations', 'doc', 'lawyerTerms'])
+                : ['name', 'email', 'phone', 'password', 'confirmPassword', 'terms', 'lawyerId', 'specializations', 'lawyerTerms'])
             : ['loginIdentifier', 'loginPassword'];
-        
+
         let isValid = true;
         // @ts-ignore
         fieldsToValidate.forEach(field => {
@@ -153,7 +150,7 @@ export const AuthPage: React.FC<{
                 isValid = false;
             }
         });
-        
+
         return isValid;
     }
 
@@ -161,7 +158,7 @@ export const AuthPage: React.FC<{
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setErrors(prev => ({ ...prev, form: '' }));
-        
+
         const isSignup = view === 'signup';
         if (!validateForm(isSignup)) {
             return;
@@ -172,18 +169,18 @@ export const AuthPage: React.FC<{
             if (view === 'login' || view === 'admin-login') {
                 const expectedRole: UserRole = view === 'admin-login' ? 'admin' : loginRole;
                 const result = await onLogin(formData.loginIdentifier, formData.loginPassword, formData.rememberMe, expectedRole);
-                
+
                 if (!result) {
                     setErrors(prev => ({ ...prev, form: 'Incorrect email/phone or password. Please try again.' }));
                 } else if (result === 'ROLE_MISMATCH') {
-                    setErrors(prev => ({ 
-                        ...prev, 
-                        form: `Account exists but is not a ${expectedRole === 'citizen' ? 'Citizen' : expectedRole === 'lawyer' ? 'Lawyer' : 'Admin'}. Please use the ${expectedRole === 'citizen' ? 'Lawyer' : 'Citizen'} login tab.` 
+                    setErrors(prev => ({
+                        ...prev,
+                        form: `Account exists but is not a ${expectedRole === 'citizen' ? 'Citizen' : expectedRole === 'lawyer' ? 'Lawyer' : 'Admin'}. Please use the ${expectedRole === 'citizen' ? 'Lawyer' : 'Citizen'} login tab.`
                     }));
                 } else if (result === 'PENDING_EMAIL_VERIFICATION') {
                     setErrors(prev => ({ ...prev, form: 'Your account is not verified. A new verification link has been sent to your email.' }));
                 } else if (view === 'admin-login' && result.role !== 'admin') {
-                    onLogout(); 
+                    onLogout();
                     setErrors(prev => ({ ...prev, form: 'Access denied. This login is for administrators only.' }));
                 }
             } else { // Signup
@@ -197,15 +194,15 @@ export const AuthPage: React.FC<{
                     newUser.specializations = formData.specializations.split(',').map(s => s.trim()).filter(Boolean);
                     newUser.communicationMode = formData.commMode as 'Email' | 'Phone' | 'Both';
                     if (formData.doc) {
-                         newUser.verificationDocs = [{ name: formData.doc.name, url: '#' }];
+                        newUser.verificationDocs = [{ name: formData.doc.name, url: '#' }];
                     }
                 }
-                const user = await onSignup(newUser);
-                if (!user) {
-                     setErrors(prev => ({ ...prev, form: 'An account with this email already exists.' }));
+                const result = await onSignup(newUser);
+                if (!result.success) {
+                    setErrors(prev => ({ ...prev, form: result.error || 'An account with this email already exists.' }));
                 }
             }
-             setIsLoading(false);
+            setIsLoading(false);
         }, 1000);
     };
 
@@ -222,7 +219,7 @@ export const AuthPage: React.FC<{
             setForgotError('No account found with that email address.');
         }
     };
-    
+
     const passwordStrength = useMemo(() => {
         const pass = formData.password;
         let score = 0;
@@ -231,7 +228,7 @@ export const AuthPage: React.FC<{
         if (pass.length >= 8) score++;
         return score;
     }, [formData.password]);
-    
+
     // Smart View Switcher: Keeps role context when switching between login/signup
     const handleSwitchView = (targetView: 'login' | 'signup') => {
         setView(targetView);
@@ -246,48 +243,48 @@ export const AuthPage: React.FC<{
 
 
     const renderForm = () => {
-        switch(view) {
+        switch (view) {
             case 'signup':
-                return <SignupForm 
-                            signupRole={signupRole} setSignupRole={setSignupRole}
-                            formData={formData} handleInputChange={handleInputChange}
-                            handleFileChange={handleFileChange} errors={errors}
-                            passwordStrength={passwordStrength} isLoading={isLoading}
-                            showLegalPage={showLegalPage} 
-                            setView={handleSwitchView} 
-                            openGoogleAuth={openGoogleAuth}
-                        />;
+                return <SignupForm
+                    signupRole={signupRole} setSignupRole={setSignupRole}
+                    formData={formData} handleInputChange={handleInputChange}
+                    handleFileChange={handleFileChange} errors={errors}
+                    passwordStrength={passwordStrength} isLoading={isLoading}
+                    showLegalPage={showLegalPage}
+                    setView={handleSwitchView}
+                    openGoogleAuth={openGoogleAuth}
+                />;
             case 'admin-login':
-                return <AdminLoginForm 
-                            formData={formData} handleInputChange={handleInputChange}
-                            errors={errors} isLoading={isLoading} setView={setView}
-                        />;
+                return <AdminLoginForm
+                    formData={formData} handleInputChange={handleInputChange}
+                    errors={errors} isLoading={isLoading} setView={setView}
+                />;
             case 'login':
             default:
                 return (
                     <>
                         <div className="border-b border-cla-border dark:border-cla-border-dark mb-6">
                             <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                                <button 
-                                    type="button" 
-                                    onClick={() => setLoginRole('citizen')} 
+                                <button
+                                    type="button"
+                                    onClick={() => setLoginRole('citizen')}
                                     className={`${loginRole === 'citizen' ? 'border-cla-gold text-cla-gold' : 'border-transparent text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-cla-text-dark hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
                                 >
                                     Citizen Login
                                 </button>
-                                <button 
-                                    type="button" 
-                                    onClick={() => setLoginRole('lawyer')} 
+                                <button
+                                    type="button"
+                                    onClick={() => setLoginRole('lawyer')}
                                     className={`${loginRole === 'lawyer' ? 'border-cla-gold text-cla-gold' : 'border-transparent text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-cla-text-dark hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
                                 >
                                     Lawyer Login
                                 </button>
                             </nav>
                         </div>
-                        <LoginForm 
+                        <LoginForm
                             formData={formData} handleInputChange={handleInputChange}
                             errors={errors} isLoading={isLoading}
-                            setForgotModalOpen={setForgotModalOpen} 
+                            setForgotModalOpen={setForgotModalOpen}
                             setView={handleSwitchView}
                             openGoogleAuth={openGoogleAuth}
                             loginRole={loginRole}
@@ -307,7 +304,7 @@ export const AuthPage: React.FC<{
             {isForgotModalOpen && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
                     <div className="bg-cla-surface dark:bg-cla-surface-dark rounded-xl shadow-2xl w-full max-w-md m-4 p-6 relative border border-cla-border dark:border-white/10">
-                         <button onClick={() => setForgotModalOpen(false)} className="absolute top-4 right-4 text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-cla-text-dark p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10">
+                        <button onClick={() => setForgotModalOpen(false)} className="absolute top-4 right-4 text-cla-text-muted dark:text-cla-text-muted-dark hover:text-cla-text dark:hover:text-cla-text-dark p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10">
                             <CloseIcon />
                         </button>
                         {forgotStep === 'email' ? (

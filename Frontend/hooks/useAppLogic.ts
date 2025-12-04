@@ -363,7 +363,7 @@ export const useAppLogic = () => {
         return null;
     };
 
-    const handleSignup = async (newUser: Omit<User, 'id' | 'avatar'>, options?: { verificationDocument?: File }): Promise<User | null> => {
+    const handleSignup = async (newUser: Omit<User, 'id' | 'avatar'>, options?: { verificationDocument?: File }): Promise<{ success: boolean; user?: User; error?: string }> => {
         // Map User type to RegisterData expected by API
         const registerData = {
             email: newUser.email,
@@ -375,11 +375,14 @@ export const useAppLogic = () => {
             lawyerId: newUser.lawyerId,
             bio: newUser.bio,
             experience: newUser.experience,
+            specializations: newUser.specializations?.join(','), // Convert array to comma-separated string
             verificationDocument: options?.verificationDocument,
         };
 
         const result = await authService.signup(registerData);
-        if ('error' in result) return null;
+        if ('error' in result) {
+            return { success: false, error: result.error };
+        }
 
         const { user: createdUser } = result;
         await bootstrapUserState(createdUser);
@@ -395,8 +398,19 @@ export const useAppLogic = () => {
             read: false
         };
         setSimulatedEmails(prev => [email, ...prev]);
-        // Will redirect to EmailVerificationPage via PageRenderer logic
-        return createdUser;
+
+        // Show success toast
+        setToast({
+            message: createdUser.role === 'lawyer'
+                ? 'Registration successful! Your account is pending verification.'
+                : 'Registration successful! Welcome to Complete Legal Aid.',
+            type: 'success'
+        });
+
+        // Redirect to dashboard
+        handleSetCurrentPage('dashboard');
+
+        return { success: true, user: createdUser };
     };
 
     const handleLogout = () => {

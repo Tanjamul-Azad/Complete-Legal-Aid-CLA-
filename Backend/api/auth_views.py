@@ -6,7 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.utils import timezone
 
-from .models import User, CitizenProfile, LawyerProfile, AdminProfile
+from .models import User, CitizenProfile, LawyerProfile, AdminProfile, LegalSpecialization, LawyerSpecializationMap
 from .serializers import UserSerializer
 from .utils import save_uploaded_file
 
@@ -35,32 +35,38 @@ def register(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Check if user already exists
-    if User.objects.filter(email=data['email']).exists():
-        print(f"User with email {data['email']} already exists")  # Debug logging
+    # Normalize email and phone number to match UserManager's create_user normalization
+    from django.contrib.auth.models import BaseUserManager
+    normalized_email = BaseUserManager.normalize_email(data['email'].strip())
+    normalized_phone = data['phone_number'].strip()
+    
+    # Check if user already exists with normalized email
+    if User.objects.filter(email__iexact=normalized_email).exists():
+        print(f"User with email {normalized_email} already exists")  # Debug logging
         return Response(
             {'error': 'An account with this email already exists.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     # Check if phone number already exists
-    if User.objects.filter(phone_number=data['phone_number']).exists():
-        print(f"User with phone {data['phone_number']} already exists")  # Debug logging
+    if User.objects.filter(phone_number=normalized_phone).exists():
+        print(f"User with phone {normalized_phone} already exists")  # Debug logging
         return Response(
             {'error': 'An account with this phone number already exists.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     try:
-        # Create user
+        # Create user with normalized values
         user = User.objects.create_user(
-            email=data['email'],
-            phone_number=data['phone_number'],
-            password=data['password']
+            email=normalized_email,
+            phone_number=normalized_phone,
+            password=data['password'],
+            role=role,
+            language_preference=data.get('language', 'EN'),
+            is_active=True  # Allow login immediately (email verification flow TBD)
         )
-        user.role = role
-        user.language_preference = data.get('language', 'EN')
-        user.is_active = True  # Auto-activate for now (can add email verification later)
+        user.is_verified = role == 'CITIZEN'  # lawyers stay pending until reviewed
         user.save()
 
         profile_photo_path = save_uploaded_file(profile_photo_file, f'profiles/{role.lower()}') if profile_photo_file else None
@@ -76,7 +82,7 @@ def register(request):
                 identity_document_url=identity_doc_path,
             )
         elif role == 'LAWYER':
-            LawyerProfile.objects.create(
+            lawyer_profile = LawyerProfile.objects.create(
                 user=user,
                 full_name_en=data['name'],
                 bar_council_number=data.get('lawyerId', f'TEMP-{user.user_id}'),
@@ -87,6 +93,30 @@ def register(request):
                 verification_document_url=verification_doc_path,
                 identity_document_url=identity_doc_path,
             )
+            
+            # Link specializations to lawyer profile
+            from .models import LegalSpecialization, LawyerSpecializationMap
+            spec_data = data.get('specializations', '')
+            
+            # Handle both comma-separated string and list formats
+            if isinstance(spec_data, str):
+                spec_list = [s.strip() for s in spec_data.split(',') if s.strip()]
+            else:
+                spec_list = spec_data or []
+            
+            # Create LawyerSpecializationMap entries for each valid specialization
+            for spec_slug in spec_list:
+                try:
+                    specialization = LegalSpecialization.objects.get(slug=spec_slug)
+                    LawyerSpecializationMap.objects.create(
+                        lawyer=lawyer_profile,
+                        specialization=specialization
+                    )
+                    print(f"Linked specialization: {specialization.name_en} to lawyer: {lawyer_profile.full_name_en}")
+                except LegalSpecialization.DoesNotExist:
+                    print(f"Warning: Invalid specialization slug '{spec_slug}' - skipping")
+                except Exception as e:
+                    print(f"Error linking specialization '{spec_slug}': {str(e)}")
         
         # Generate tokens
         refresh = RefreshToken.for_user(user)
@@ -117,14 +147,28 @@ def login(request):
     """
     Login user and return JWT tokens
     """
-    email = request.data.get('email')
+    identifier = request.data.get('identifier') or request.data.get('email') or request.data.get('phone_number')
     password = request.data.get('password')
-    
-    if not email or not password:
+
+    if not identifier or not password:
         return Response(
-            {'error': 'Email and password are required'},
+            {'error': 'Email/phone and password are required'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    identifier = identifier.strip()
+
+    # Allow phone based login by resolving to the user's email
+    email = identifier
+    if '@' not in identifier:
+        try:
+            user_obj = User.objects.get(phone_number=identifier)
+            email = user_obj.email
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Invalid credentials'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
     
     # Authenticate user - pass request and use email parameter
     user = authenticate(request=request, email=email, password=password)
@@ -141,11 +185,17 @@ def login(request):
     # Serialize user data
     user_data = UserSerializer(user, context={'request': request}).data
     
-    return Response({
+    response_data = {
         'user': user_data,
         'access': str(refresh.access_token),
         'refresh': str(refresh),
-    })
+    }
+
+    # Add verification status for lawyers
+    if user.role == 'LAWYER' and hasattr(user, 'lawyer_profile'):
+        response_data['verification_status'] = user.lawyer_profile.verification_status
+
+    return Response(response_data)
 
 
 @api_view(['GET'])
@@ -220,9 +270,44 @@ def update_profile(request):
         if hasattr(user, 'lawyer_profile') and user.role == 'LAWYER':
             if 'bio' in data:
                 user.lawyer_profile.bio_en = data['bio']
+            if 'location' in data:
+                user.lawyer_profile.chamber_address = data['location']
+            if 'fees' in data:
+                try:
+                    user.lawyer_profile.consultation_fee_online = float(data['fees'])
+                except (ValueError, TypeError):
+                    pass
+            if 'experience' in data:
+                try:
+                    years = int(data['experience'])
+                    from django.utils import timezone
+                    today = timezone.now().date()
+                    # Approximate license date based on years of experience
+                    issue_date = today.replace(year=today.year - years)
+                    user.lawyer_profile.license_issue_date = issue_date
+                except (ValueError, TypeError):
+                    pass
+            
             if 'specializations' in data:
-                # Handle specializations update if needed
-                pass
+                specs_str = data['specializations']
+                if specs_str:
+                    spec_names = [s.strip() for s in specs_str.split(',') if s.strip()]
+                    # Clear existing mappings
+                    LawyerSpecializationMap.objects.filter(lawyer=user.lawyer_profile).delete()
+                    
+                    for name in spec_names:
+                        # Find or create specialization
+                        # Note: In a real app, we might want to restrict to existing ones or handle creation carefully
+                        # For now, we'll try to find case-insensitive match or create
+                        spec = LegalSpecialization.objects.filter(name_en__iexact=name).first()
+                        if not spec:
+                            spec = LegalSpecialization.objects.create(name_en=name, name_bn=name) # Fallback BN name
+                        
+                        LawyerSpecializationMap.objects.create(
+                            lawyer=user.lawyer_profile,
+                            specialization=spec
+                        )
+
             user.lawyer_profile.save()
         
         # Update citizen-specific fields
